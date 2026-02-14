@@ -8,7 +8,7 @@
 <link rel="icon" type="image/png" href="logo.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,700;1,400&family=Oswald:wght@500;700&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <style>
   *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -868,7 +868,7 @@ insert into site_post (id) values (1) on conflict (id) do nothing;<button class=
 // ════════════════════════════════════
 const PW_HASH = '88056519922f4b7bc7b2b285c66c6f31ade6dc4959098676f689fc0525174b74';
 let authed = false;
-let supabase = null;
+let sbClient = null;
 let currentPost = null;
 let currentLinks = [];
 let currentConfig = {};
@@ -891,7 +891,7 @@ const PLATFORM_NAMES = { youtube:'YouTube', instagram:'Instagram', tiktok:'TikTo
 // ════════════════════════════════════
 function initSupabase(url, key) {
   try {
-    supabase = window.supabase.createClient(url, key);
+    sbClient = window.supabase.createClient(url, key);
     return true;
   } catch(e) {
     return false;
@@ -913,11 +913,11 @@ function loadCreds() {
 // ════════════════════════════════════
 async function loadSiteData() {
   loadCreds();
-  if (!supabase) return;
+  if (!sbClient) return;
 
   try {
     // Load config
-    const { data: cfg } = await supabase.from('site_config').select('*').eq('id', 1).single();
+    const { data: cfg } = await sbClient.from('site_config').select('*').eq('id', 1).single();
     if (cfg) {
       currentConfig = cfg;
       document.getElementById('siteName').textContent = cfg.name || 'Dragsterjack';
@@ -927,14 +927,14 @@ async function loadSiteData() {
     }
 
     // Load post
-    const { data: post } = await supabase.from('site_post').select('*').eq('id', 1).single();
+    const { data: post } = await sbClient.from('site_post').select('*').eq('id', 1).single();
     if (post && post.active && post.title) {
       currentPost = post;
       displayPost(post);
     }
 
     // Load links
-    const { data: links } = await supabase.from('site_links').select('*').order('sort_order').order('created_at');
+    const { data: links } = await sbClient.from('site_links').select('*').order('sort_order').order('created_at');
     if (links && links.length) {
       currentLinks = links;
       renderLinks(links);
@@ -1045,7 +1045,7 @@ function loadAdminData() {
   document.getElementById('cfgUrl').value = localStorage.getItem('sb_url') || '';
   document.getElementById('cfgKey').value = localStorage.getItem('sb_key') || '';
 
-  if (!supabase) return;
+  if (!sbClient) return;
 
   // Pre-fill profile
   if (currentConfig) {
@@ -1078,8 +1078,8 @@ function loadAdminData() {
 }
 
 async function refreshPostFromDB() {
-  if (!supabase) return;
-  const { data } = await supabase.from('site_post').select('*').eq('id', 1).single();
+  if (!sbClient) return;
+  const { data } = await sbClient.from('site_post').select('*').eq('id', 1).single();
   if (data) {
     currentPost = data;
     document.getElementById('postActive').checked = data.active || false;
@@ -1103,7 +1103,7 @@ async function refreshPostFromDB() {
 function updateSetupStatus() {
   const bar = document.getElementById('setupStatusBar');
   const hasKey = !!localStorage.getItem('sb_key');
-  if (hasKey && supabase) {
+  if (hasKey && sbClient) {
     bar.innerHTML = `<div class="setup-status connected"><span class="setup-status-dot"></span>Connected to Supabase</div>`;
   } else {
     bar.innerHTML = `<div class="setup-status disconnected"><span class="setup-status-dot"></span>Not connected — enter credentials below</div>`;
@@ -1126,7 +1126,7 @@ async function saveSupabaseCreds() {
     if (!ok) throw new Error('Invalid credentials format');
 
     // Test connection
-    const { error } = await supabase.from('site_config').select('id').eq('id', 1).single();
+    const { error } = await sbClient.from('site_config').select('id').eq('id', 1).single();
     if (error && error.code !== 'PGRST116') throw error;
 
     localStorage.setItem('sb_url', url);
@@ -1139,7 +1139,7 @@ async function saveSupabaseCreds() {
 
   } catch(e) {
     msg.innerHTML = `<div class="error-msg">Connection failed: ${e.message}. Check your URL and key, and make sure you ran the SQL setup.</div>`;
-    supabase = null;
+    sbClient = null;
   }
 
   btn.disabled = false;
@@ -1150,7 +1150,7 @@ function clearCreds() {
   if (!confirm('Clear Supabase credentials?')) return;
   localStorage.removeItem('sb_url');
   localStorage.removeItem('sb_key');
-  supabase = null;
+  sbClient = null;
   document.getElementById('cfgUrl').value = '';
   document.getElementById('cfgKey').value = '';
   updateSetupStatus();
@@ -1170,7 +1170,7 @@ function copySQL() {
 //  PROFILE TAB
 // ════════════════════════════════════
 async function saveProfile() {
-  if (!supabase) { showMsg('profileMsg', 'error', 'Not connected to Supabase. Go to Setup tab first.'); return; }
+  if (!sbClient) { showMsg('profileMsg', 'error', 'Not connected to Supabase. Go to Setup tab first.'); return; }
 
   const btn = document.getElementById('btnSaveProfile');
   btn.disabled = true;
@@ -1184,7 +1184,7 @@ async function saveProfile() {
     footer_text: document.getElementById('profFooter').value.trim()
   };
 
-  const { error } = await supabase.from('site_config').upsert(data, { onConflict: 'id' });
+  const { error } = await sbClient.from('site_config').upsert(data, { onConflict: 'id' });
 
   if (error) {
     showMsg('profileMsg', 'error', 'Error: ' + error.message);
@@ -1223,7 +1223,7 @@ document.getElementById('formBanner').addEventListener('input', function() {
 });
 
 async function savePost() {
-  if (!supabase) { showMsg('postMsg', 'error', 'Not connected to Supabase. Go to Setup tab first.'); return; }
+  if (!sbClient) { showMsg('postMsg', 'error', 'Not connected to Supabase. Go to Setup tab first.'); return; }
 
   const btn = document.getElementById('btnSavePost');
   btn.disabled = true;
@@ -1239,7 +1239,7 @@ async function savePost() {
     description: document.getElementById('formDesc').value.trim()
   };
 
-  const { error } = await supabase.from('site_post').upsert(data, { onConflict: 'id' });
+  const { error } = await sbClient.from('site_post').upsert(data, { onConflict: 'id' });
 
   if (error) {
     showMsg('postMsg', 'error', 'Error: ' + error.message);
@@ -1261,12 +1261,12 @@ async function savePost() {
 //  LINKS TAB
 // ════════════════════════════════════
 async function renderAdminLinks() {
-  if (!supabase) {
+  if (!sbClient) {
     document.getElementById('adminLinksList').innerHTML = '<p style="color:var(--gray-3);font-size:0.88rem;text-align:center;padding:12px 0;">Connect Supabase in Setup tab first.</p>';
     return;
   }
 
-  const { data, error } = await supabase.from('site_links').select('*').order('sort_order').order('created_at');
+  const { data, error } = await sbClient.from('site_links').select('*').order('sort_order').order('created_at');
   const list = document.getElementById('adminLinksList');
 
   if (error || !data || data.length === 0) {
@@ -1330,7 +1330,7 @@ function cancelLinkForm() {
 }
 
 async function submitLinkForm() {
-  if (!supabase) return;
+  if (!sbClient) return;
 
   const id = document.getElementById('editLinkId').value;
   const label = document.getElementById('linkLabel').value.trim();
@@ -1354,10 +1354,10 @@ async function submitLinkForm() {
 
   let error;
   if (id) {
-    const res = await supabase.from('site_links').update(data).eq('id', id);
+    const res = await sbClient.from('site_links').update(data).eq('id', id);
     error = res.error;
   } else {
-    const res = await supabase.from('site_links').insert(data);
+    const res = await sbClient.from('site_links').insert(data);
     error = res.error;
   }
 
@@ -1375,7 +1375,7 @@ async function submitLinkForm() {
 
 async function deleteLink(id) {
   if (!confirm('Delete this link?')) return;
-  const { error } = await supabase.from('site_links').delete().eq('id', id);
+  const { error } = await sbClient.from('site_links').delete().eq('id', id);
   if (error) {
     showMsg('linksMsg', 'error', 'Error: ' + error.message);
   } else {
