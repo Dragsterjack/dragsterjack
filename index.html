@@ -731,7 +731,7 @@ insert into site_post (id) values (1) on conflict (id) do nothing;<button class=
           </div>
           <div class="field">
             <label class="field-label">Supabase Anon Key</label>
-            <input type="text" class="field-input" id="cfgKey" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...">
+            <input type="text" class="field-input" id="cfgKey" placeholder="sb_publishable_... or eyJhbGci...">
             <span class="field-hint">The public "anon" key — safe to use in a website.</span>
           </div>
           <div class="btn-row">
@@ -894,6 +894,7 @@ function initSupabase(url, key) {
     sbClient = window.supabase.createClient(url, key);
     return true;
   } catch(e) {
+    console.error('Supabase init error:', e);
     return false;
   }
 }
