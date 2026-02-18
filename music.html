@@ -409,8 +409,8 @@ let sbClient = null;
 let musicItems = [];
 
 // ⚠️  PASTE YOUR CREDENTIALS HERE (same as index.html)
-const HARDCODED_URL = 'https://ivpmrajkrgcojvdcavwn.supabase.co';  // e.g. 'https://xyz.supabase.co'
-const HARDCODED_KEY = 'sb_publishable_eDKUL25CG1-D3uAiZp7Bjg_iSr8knRX';  // e.g. 'sb_publishable_...'
+const HARDCODED_URL = '';  // e.g. 'https://xyz.supabase.co'
+const HARDCODED_KEY = '';  // e.g. 'sb_publishable_...'
 
 // ════════════════════════════════════
 //  SUPABASE INIT
@@ -536,30 +536,55 @@ function closeAdminModal() {
 }
 
 async function loadMusicList() {
-  if (!sbClient) return;
+  if (!sbClient) {
+    console.log('sbClient not initialized');
+    return;
+  }
 
   try {
-    const { data } = await sbClient
+    const { data, error } = await sbClient
       .from('music_embeds')
       .select('*')
       .order('created_at', { ascending: false });
     
+    if (error) {
+      console.error('Supabase error:', error);
+      throw error;
+    }
+    
     musicItems = data || [];
+    console.log('Loaded music items:', musicItems);
     
     const list = document.getElementById('musicList');
+    if (!list) {
+      console.error('musicList element not found');
+      return;
+    }
+    
     if (musicItems.length === 0) {
       list.innerHTML = '<p style="color: var(--gray-3); font-size: 0.9rem;">No music embeds yet</p>';
       return;
     }
 
-    list.innerHTML = musicItems.map(item => `
-      <div class="music-list-item">
-        <code>${item.embed_code.substring(0, 80)}...</code>
-        <button class="btn btn-danger" style="padding: 8px 16px; font-size: 0.8rem;" onclick="deleteMusic('${item.id}')">Delete</button>
-      </div>
-    `).join('');
+    const html = musicItems.map(item => {
+      const preview = item.embed_code.substring(0, 80).replace(/"/g, '&quot;');
+      return `
+        <div class="music-list-item">
+          <code>${preview}...</code>
+          <button class="btn btn-danger" style="padding: 8px 16px; font-size: 0.8rem;" onclick="deleteMusic('${item.id}')">Delete</button>
+        </div>
+      `;
+    }).join('');
+    
+    console.log('Setting innerHTML, length:', html.length);
+    list.innerHTML = html;
+    console.log('innerHTML set successfully');
   } catch(e) {
     console.error('Load music list error:', e);
+    const list = document.getElementById('musicList');
+    if (list) {
+      list.innerHTML = '<p style="color: var(--red);">Error loading music list. Check console.</p>';
+    }
   }
 }
 
