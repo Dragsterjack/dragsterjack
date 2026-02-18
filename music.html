@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Music — Dragsterjack</title>
+<meta name="description" content="What Dragsterjack is listening to right now">
+<link rel="icon" type="image/png" href="logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,700;1,400&family=Oswald:wght@500;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --white: #ffffff;
+    --off-white: #f7f7f5;
+    --black: #111111;
+    --gray-1: #333;
+    --gray-2: #666;
+    --gray-3: #999;
+    --gray-4: #ccc;
+    --gray-5: #e8e8e6;
+    --red: #c0392b;
+    --red-light: #e74c3c;
+    --red-bg: rgba(192,57,43,0.06);
+    --green: #27ae60;
+    --blue: #2980b9;
+    --blue-bg: rgba(41,128,185,0.08);
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+    --shadow-md: 0 4px 20px rgba(0,0,0,0.08);
+    --shadow-lg: 0 12px 40px rgba(0,0,0,0.12);
+    --radius: 10px;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--white);
+    color: var(--black);
+    min-height: 100dvh;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .page {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 48px 24px 80px;
+  }
+
+  .header {
+    text-align: center;
+    margin-bottom: 48px;
+    animation: fadeUp 0.5s ease-out both;
+  }
+
+  .title {
+    font-family: 'Oswald', sans-serif;
+    font-weight: 700;
+    font-size: 3rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--black);
+    margin-bottom: 12px;
+  }
+
+  .subtitle {
+    font-size: 1.125rem;
+    color: var(--gray-2);
+  }
+
+  .back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--gray-2);
+    text-decoration: none;
+    font-size: 0.9rem;
+    margin-bottom: 24px;
+    transition: color 0.2s;
+  }
+
+  .back-link:hover {
+    color: var(--black);
+  }
+
+  .music-grid {
+    display: grid;
+    gap: 32px;
+    animation: fadeUp 0.6s ease-out 0.1s both;
+  }
+
+  .music-item {
+    background: var(--off-white);
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow-md);
+    transition: transform 0.3s, box-shadow 0.3s;
+  }
+
+  .music-item:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .music-embed {
+    width: 100%;
+    border: none;
+    display: block;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 80px 24px;
+    color: var(--gray-3);
+  }
+
+  .empty-state svg {
+    width: 80px;
+    height: 80px;
+    margin-bottom: 24px;
+    opacity: 0.3;
+  }
+
+  /* Admin gear icon */
+  .admin-trigger {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    width: 40px;
+    height: 40px;
+    background: var(--black);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    opacity: 0.15;
+    transition: opacity 0.2s;
+    z-index: 100;
+  }
+
+  .admin-trigger:hover {
+    opacity: 1;
+  }
+
+  .admin-trigger svg {
+    width: 20px;
+    height: 20px;
+    fill: var(--white);
+  }
+
+  /* Modal */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(8px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 24px;
+  }
+
+  .modal-overlay.active {
+    display: flex;
+  }
+
+  .modal {
+    background: var(--white);
+    border-radius: 12px;
+    width: 100%;
+    max-width: 600px;
+    max-height: 90vh;
+    overflow: hidden;
+    box-shadow: var(--shadow-lg);
+  }
+
+  .modal-header {
+    padding: 24px;
+    border-bottom: 1px solid var(--gray-5);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .modal-title {
+    font-family: 'Oswald', sans-serif;
+    font-size: 1.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+
+  .modal-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: var(--gray-3);
+    padding: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .modal-close:hover {
+    color: var(--black);
+  }
+
+  .modal-body {
+    padding: 24px;
+    max-height: calc(90vh - 140px);
+    overflow-y: auto;
+  }
+
+  .form-group {
+    margin-bottom: 24px;
+  }
+
+  .form-label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: var(--gray-1);
+  }
+
+  .form-textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid var(--gray-4);
+    border-radius: 8px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.875rem;
+    resize: vertical;
+    min-height: 120px;
+  }
+
+  .form-textarea:focus {
+    outline: none;
+    border-color: var(--black);
+  }
+
+  .btn {
+    background: var(--black);
+    color: var(--white);
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+  }
+
+  .btn:hover {
+    background: var(--gray-1);
+    transform: translateY(-1px);
+  }
+
+  .btn-danger {
+    background: var(--red);
+  }
+
+  .btn-danger:hover {
+    background: var(--red-light);
+  }
+
+  .music-list-item {
+    background: var(--off-white);
+    padding: 16px;
+    border-radius: 8px;
+    margin-bottom: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .music-list-item code {
+    font-size: 0.75rem;
+    color: var(--gray-2);
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 400px;
+  }
+
+  .msg {
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+    font-size: 0.9rem;
+    display: none;
+  }
+
+  .msg.active {
+    display: block;
+  }
+
+  .msg.success {
+    background: #d4edda;
+    color: #155724;
+  }
+
+  .msg.error {
+    background: #f8d7da;
+    color: #721c24;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @media (max-width: 640px) {
+    .title { font-size: 2rem; }
+    .music-list-item code { max-width: 200px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+  <a href="/" class="back-link">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+    </svg>
+    Back to home
+  </a>
+
+  <div class="header">
+    <h1 class="title">Music</h1>
+    <p class="subtitle">What I'm listening to</p>
+  </div>
+
+  <div class="music-grid" id="musicGrid">
+    <div class="empty-state">
+      <svg viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
+      </svg>
+      <p>No music added yet</p>
+    </div>
+  </div>
+</div>
+
+<!-- Admin trigger -->
+<div class="admin-trigger" onclick="showPasswordPrompt()">
+  <svg viewBox="0 0 24 24">
+    <path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/>
+  </svg>
+</div>
+
+<!-- Password Modal -->
+<div class="modal-overlay" id="passwordModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 class="modal-title">Admin Access</h2>
+      <button class="modal-close" onclick="closePasswordModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input type="password" id="passwordInput" class="form-textarea" style="min-height: auto;" placeholder="Enter password">
+      </div>
+      <button class="btn" onclick="checkPassword()">Login</button>
+      <div class="msg" id="pwMsg"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Admin Panel Modal -->
+<div class="modal-overlay" id="adminModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 class="modal-title">Manage Music</h2>
+      <button class="modal-close" onclick="closeAdminModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="msg" id="adminMsg"></div>
+      
+      <div class="form-group">
+        <label class="form-label">Add Apple Music Embed</label>
+        <p style="font-size: 0.85rem; color: var(--gray-3); margin-bottom: 8px;">
+          Go to Apple Music → share song/album → Embed → copy the entire &lt;iframe&gt; code
+        </p>
+        <textarea id="embedInput" class="form-textarea" placeholder='<iframe allow="autoplay *; encrypted-media *;" frameborder="0" height="450" style="width:100%;max-width:660px;overflow:hidden;background:transparent;" sandbox="allow-forms allow-popups allow-same-origin allow-scripts allow-storage-access-by-user-activation allow-top-navigation-by-user-activation" src="https://embed.music.apple.com/us/album/..."></iframe>'></textarea>
+      </div>
+      <button class="btn" onclick="addMusic()">Add Music</button>
+
+      <div style="margin-top: 32px; border-top: 1px solid var(--gray-5); padding-top: 24px;">
+        <label class="form-label">Current Music</label>
+        <div id="musicList"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ════════════════════════════════════
+//  CONSTANTS & STATE
+// ════════════════════════════════════
+const PW_HASH = '88056519922f4b7bc7b2b285c66c6f31ade6dc4959098676f689fc0525174b74';
+let authed = false;
+let sbClient = null;
+let musicItems = [];
+
+// ⚠️  PASTE YOUR CREDENTIALS HERE (same as index.html)
+const HARDCODED_URL = '';  // e.g. 'https://xyz.supabase.co'
+const HARDCODED_KEY = '';  // e.g. 'sb_publishable_...'
+
+// ════════════════════════════════════
+//  SUPABASE INIT
+// ════════════════════════════════════
+function initSupabase(url, key) {
+  try {
+    sbClient = window.supabase.createClient(url, key);
+    return true;
+  } catch(e) {
+    console.error('Supabase init error:', e);
+    return false;
+  }
+}
+
+function loadCreds() {
+  // First try hardcoded credentials
+  if (HARDCODED_URL && HARDCODED_KEY) {
+    initSupabase(HARDCODED_URL, HARDCODED_KEY);
+    return true;
+  }
+  // Fallback to localStorage
+  const url = localStorage.getItem('sb_url');
+  const key = localStorage.getItem('sb_key');
+  if (url && key) {
+    initSupabase(url, key);
+    return true;
+  }
+  return false;
+}
+
+// ════════════════════════════════════
+//  LOAD MUSIC DATA
+// ════════════════════════════════════
+async function loadMusic() {
+  loadCreds();
+  if (!sbClient) {
+    console.log('Supabase not configured');
+    return;
+  }
+
+  try {
+    const { data, error } = await sbClient
+      .from('music_embeds')
+      .select('*')
+      .order('created_at', { ascending: false });
+    
+    if (error) throw error;
+    
+    musicItems = data || [];
+    renderMusic();
+  } catch(e) {
+    console.error('Load music error:', e);
+  }
+}
+
+function renderMusic() {
+  const grid = document.getElementById('musicGrid');
+  
+  if (musicItems.length === 0) {
+    grid.innerHTML = `
+      <div class="empty-state">
+        <svg viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
+        </svg>
+        <p>No music added yet</p>
+      </div>
+    `;
+    return;
+  }
+
+  grid.innerHTML = musicItems.map(item => `
+    <div class="music-item">
+      ${item.embed_code}
+    </div>
+  `).join('');
+}
+
+// ════════════════════════════════════
+//  PASSWORD CHECK
+// ════════════════════════════════════
+async function hashStr(str) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+}
+
+function showPasswordPrompt() {
+  document.getElementById('passwordModal').classList.add('active');
+  document.getElementById('passwordInput').value = '';
+  document.getElementById('passwordInput').focus();
+}
+
+function closePasswordModal() {
+  document.getElementById('passwordModal').classList.remove('active');
+}
+
+async function checkPassword() {
+  const pw = document.getElementById('passwordInput').value;
+  const hash = await hashStr(pw);
+  
+  if (hash === PW_HASH) {
+    authed = true;
+    closePasswordModal();
+    openAdminPanel();
+  } else {
+    showMsg('pwMsg', 'error', 'Incorrect password');
+  }
+}
+
+document.getElementById('passwordInput').addEventListener('keypress', (e) => {
+  if (e.key === 'Enter') checkPassword();
+});
+
+// ════════════════════════════════════
+//  ADMIN PANEL
+// ════════════════════════════════════
+function openAdminPanel() {
+  document.getElementById('adminModal').classList.add('active');
+  loadMusicList();
+}
+
+function closeAdminModal() {
+  document.getElementById('adminModal').classList.remove('active');
+}
+
+async function loadMusicList() {
+  if (!sbClient) return;
+
+  try {
+    const { data } = await sbClient
+      .from('music_embeds')
+      .select('*')
+      .order('created_at', { ascending: false });
+    
+    musicItems = data || [];
+    
+    const list = document.getElementById('musicList');
+    if (musicItems.length === 0) {
+      list.innerHTML = '<p style="color: var(--gray-3); font-size: 0.9rem;">No music embeds yet</p>';
+      return;
+    }
+
+    list.innerHTML = musicItems.map(item => `
+      <div class="music-list-item">
+        <code>${item.embed_code.substring(0, 80)}...</code>
+        <button class="btn btn-danger" style="padding: 8px 16px; font-size: 0.8rem;" onclick="deleteMusic('${item.id}')">Delete</button>
+      </div>
+    `).join('');
+  } catch(e) {
+    console.error('Load music list error:', e);
+  }
+}
+
+async function addMusic() {
+  const embedCode = document.getElementById('embedInput').value.trim();
+  
+  if (!embedCode) {
+    showMsg('adminMsg', 'error', 'Please paste the embed code');
+    return;
+  }
+
+  if (!embedCode.includes('<iframe') || !embedCode.includes('embed.music.apple.com')) {
+    showMsg('adminMsg', 'error', 'Invalid Apple Music embed code');
+    return;
+  }
+
+  if (!sbClient) {
+    showMsg('adminMsg', 'error', 'Supabase not connected');
+    return;
+  }
+
+  try {
+    const { error } = await sbClient
+      .from('music_embeds')
+      .insert({ embed_code: embedCode });
+    
+    if (error) throw error;
+    
+    showMsg('adminMsg', 'success', 'Music added successfully!');
+    document.getElementById('embedInput').value = '';
+    await loadMusic();
+    await loadMusicList();
+  } catch(e) {
+    console.error('Add music error:', e);
+    showMsg('adminMsg', 'error', 'Failed to add music: ' + e.message);
+  }
+}
+
+async function deleteMusic(id) {
+  if (!confirm('Delete this music embed?')) return;
+
+  try {
+    const { error } = await sbClient
+      .from('music_embeds')
+      .delete()
+      .eq('id', id);
+    
+    if (error) throw error;
+    
+    showMsg('adminMsg', 'success', 'Deleted successfully');
+    await loadMusic();
+    await loadMusicList();
+  } catch(e) {
+    console.error('Delete music error:', e);
+    showMsg('adminMsg', 'error', 'Failed to delete: ' + e.message);
+  }
+}
+
+function showMsg(id, type, text) {
+  const el = document.getElementById(id);
+  el.textContent = text;
+  el.className = 'msg active ' + type;
+  setTimeout(() => el.classList.remove('active'), 4000);
+}
+
+// ════════════════════════════════════
+//  INIT
+// ════════════════════════════════════
+loadMusic();
+</script>
+
+</body>
+</html>
