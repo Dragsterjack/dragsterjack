@@ -567,7 +567,14 @@ async function loadMusicList() {
     }
 
     const html = musicItems.map(item => {
-      const preview = item.embed_code.substring(0, 80).replace(/"/g, '&quot;');
+      // Escape HTML for display
+      const preview = item.embed_code
+        .substring(0, 80)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+      
       return `
         <div class="music-list-item" style="display: flex; align-items: center; gap: 12px;">
           <code style="flex: 1; color: #666; font-size: 0.75rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${preview}...</code>
