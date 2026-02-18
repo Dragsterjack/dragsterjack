@@ -569,9 +569,9 @@ async function loadMusicList() {
     const html = musicItems.map(item => {
       const preview = item.embed_code.substring(0, 80).replace(/"/g, '&quot;');
       return `
-        <div class="music-list-item">
-          <code>${preview}...</code>
-          <button class="btn btn-danger" style="padding: 8px 16px; font-size: 0.8rem;" onclick="deleteMusic('${item.id}')">Delete</button>
+        <div class="music-list-item" style="display: flex; align-items: center; gap: 12px;">
+          <code style="flex: 1; color: #666; font-size: 0.75rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${preview}...</code>
+          <button class="btn btn-danger" style="padding: 8px 16px; font-size: 0.8rem; flex-shrink: 0;" onclick="deleteMusic('${item.id}')">Delete</button>
         </div>
       `;
     }).join('');
