@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aura — Dragsterjack</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" type="image/png" href="logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,700;1,400&family=Oswald:wght@500;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --white: #ffffff;
+    --off-white: #f7f7f5;
+    --black: #111111;
+    --gray-1: #333;
+    --gray-2: #666;
+    --gray-3: #999;
+    --gray-4: #ccc;
+    --gray-5: #e8e8e6;
+    --red: #c0392b;
+    --red-light: #e74c3c;
+    --red-bg: rgba(192,57,43,0.06);
+    --green: #27ae60;
+    --blue: #2980b9;
+    --blue-bg: rgba(41,128,185,0.08);
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+    --shadow-md: 0 4px 20px rgba(0,0,0,0.08);
+    --shadow-lg: 0 12px 40px rgba(0,0,0,0.12);
+    --radius: 10px;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--black);
+    color: var(--white);
+    min-height: 100dvh;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .page {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 48px 24px 80px;
+  }
+
+  .header {
+    text-align: center;
+    margin-bottom: 48px;
+    animation: fadeUp 0.5s ease-out both;
+  }
+
+  .title {
+    font-family: 'Oswald', sans-serif;
+    font-weight: 700;
+    font-size: 3rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--white);
+    margin-bottom: 12px;
+  }
+
+  .subtitle {
+    font-size: 1rem;
+    color: var(--gray-4);
+  }
+
+  .create-section {
+    background: var(--gray-1);
+    border-radius: var(--radius);
+    padding: 32px;
+    margin-bottom: 32px;
+    animation: fadeUp 0.6s ease-out 0.1s both;
+  }
+
+  .form-group {
+    margin-bottom: 20px;
+  }
+
+  .form-label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: var(--white);
+    font-size: 0.9rem;
+  }
+
+  .form-input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid var(--gray-2);
+    border-radius: 8px;
+    font-size: 0.95rem;
+    background: var(--black);
+    color: var(--white);
+    font-family: inherit;
+  }
+
+  .form-input:focus {
+    outline: none;
+    border-color: var(--white);
+  }
+
+  .form-input::placeholder {
+    color: var(--gray-3);
+  }
+
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 12px;
+  }
+
+  .btn {
+    background: var(--white);
+    color: var(--black);
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 0.95rem;
+    transition: all 0.2s;
+    font-family: inherit;
+  }
+
+  .btn:hover {
+    background: var(--gray-5);
+    transform: translateY(-1px);
+  }
+
+  .btn-small {
+    padding: 8px 16px;
+    font-size: 0.85rem;
+  }
+
+  .btn-danger {
+    background: var(--red);
+    color: var(--white);
+  }
+
+  .btn-danger:hover {
+    background: var(--red-light);
+  }
+
+  .msg {
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+    font-size: 0.9rem;
+    display: none;
+  }
+
+  .msg.active {
+    display: block;
+  }
+
+  .msg.success {
+    background: #d4edda;
+    color: #155724;
+  }
+
+  .msg.error {
+    background: #f8d7da;
+    color: #721c24;
+  }
+
+  .result-box {
+    background: var(--blue-bg);
+    border: 1px solid var(--blue);
+    border-radius: 8px;
+    padding: 16px;
+    margin-top: 16px;
+    display: none;
+  }
+
+  .result-box.active {
+    display: block;
+  }
+
+  .result-url {
+    font-family: 'Courier New', monospace;
+    font-size: 1.1rem;
+    color: var(--white);
+    word-break: break-all;
+    margin-bottom: 12px;
+  }
+
+  .links-section {
+    animation: fadeUp 0.7s ease-out 0.2s both;
+  }
+
+  .section-title {
+    font-family: 'Oswald', sans-serif;
+    font-size: 1.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    margin-bottom: 20px;
+    color: var(--white);
+  }
+
+  .link-item {
+    background: var(--gray-1);
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 16px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 16px;
+    align-items: start;
+  }
+
+  .link-info {
+    min-width: 0;
+  }
+
+  .link-short {
+    font-family: 'Courier New', monospace;
+    font-size: 1rem;
+    color: var(--white);
+    margin-bottom: 8px;
+    word-break: break-all;
+  }
+
+  .link-dest {
+    font-size: 0.85rem;
+    color: var(--gray-4);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    margin-bottom: 8px;
+  }
+
+  .link-meta {
+    font-size: 0.8rem;
+    color: var(--gray-3);
+  }
+
+  .link-actions {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  .copy-btn {
+    background: var(--gray-2);
+    color: var(--white);
+    border: none;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .copy-btn:hover {
+    background: var(--gray-3);
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 60px 24px;
+    color: var(--gray-3);
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @media (max-width: 640px) {
+    .title { font-size: 2rem; }
+    .link-item {
+      grid-template-columns: 1fr;
+    }
+    .link-actions {
+      justify-content: flex-end;
+    }
+    .form-row {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+  <div class="header">
+    <h1 class="title">AURA</h1>
+    <p class="subtitle">Personal URL Shortener</p>
+  </div>
+
+  <div class="create-section">
+    <div class="msg" id="createMsg"></div>
+    
+    <div class="form-group">
+      <label class="form-label">Destination URL</label>
+      <input type="url" id="destUrl" class="form-input" placeholder="https://www.youtube.com/watch?v=ag8d2bWHOzg">
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Custom Short Code (optional)</label>
+      <div class="form-row">
+        <input type="text" id="customSlug" class="form-input" placeholder="Leave blank for random (e.g. x7k2)" pattern="[a-zA-Z0-9-_]+" maxlength="20">
+        <button class="btn" onclick="createShortLink()">Create Link</button>
+      </div>
+      <small style="color: var(--gray-4); font-size: 0.8rem; margin-top: 4px; display: block;">Only letters, numbers, hyphens, underscores</small>
+    </div>
+
+    <div class="result-box" id="resultBox">
+      <div class="result-url" id="resultUrl"></div>
+      <button class="btn btn-small" onclick="copyResult()">Copy Link</button>
+    </div>
+  </div>
+
+  <div class="links-section">
+    <h2 class="section-title">Your Links</h2>
+    <div id="linksList">
+      <div class="empty-state">
+        <p>No short links yet. Create one above!</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ════════════════════════════════════
+//  CONSTANTS & STATE
+// ════════════════════════════════════
+const PW_HASH = '88056519922f4b7bc7b2b285c66c6f31ade6dc4959098676f689fc0525174b74';
+let sbClient = null;
+let shortLinks = [];
+
+// ⚠️  PASTE YOUR CREDENTIALS HERE
+const HARDCODED_URL = '';  // e.g. 'https://xyz.supabase.co'
+const HARDCODED_KEY = '';  // e.g. 'sb_publishable_...'
+
+// ════════════════════════════════════
+//  SUPABASE INIT
+// ════════════════════════════════════
+function initSupabase(url, key) {
+  try {
+    sbClient = window.supabase.createClient(url, key);
+    return true;
+  } catch(e) {
+    console.error('Supabase init error:', e);
+    return false;
+  }
+}
+
+function loadCreds() {
+  if (HARDCODED_URL && HARDCODED_KEY) {
+    initSupabase(HARDCODED_URL, HARDCODED_KEY);
+    return true;
+  }
+  const url = localStorage.getItem('sb_url');
+  const key = localStorage.getItem('sb_key');
+  if (url && key) {
+    initSupabase(url, key);
+    return true;
+  }
+  return false;
+}
+
+// ════════════════════════════════════
+//  PASSWORD CHECK ON LOAD
+// ════════════════════════════════════
+async function hashStr(str) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+}
+
+async function checkAccess() {
+  const pw = prompt('Password required to access this page:');
+  if (!pw) {
+    document.body.innerHTML = '<div style="text-align:center;padding:100px;color:#666;">Access denied.</div>';
+    return false;
+  }
+  const hash = await hashStr(pw);
+  if (hash !== PW_HASH) {
+    document.body.innerHTML = '<div style="text-align:center;padding:100px;color:#666;">Incorrect password.</div>';
+    return false;
+  }
+  return true;
+}
+
+// ════════════════════════════════════
+//  RANDOM SLUG GENERATOR
+// ════════════════════════════════════
+function generateSlug(length = 4) {
+  const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+  let result = '';
+  for (let i = 0; i < length; i++) {
+    result += chars[Math.floor(Math.random() * chars.length)];
+  }
+  return result;
+}
+
+async function isSlugAvailable(slug) {
+  const { data } = await sbClient
+    .from('short_links')
+    .select('slug')
+    .eq('slug', slug)
+    .single();
+  return !data;
+}
+
+// ════════════════════════════════════
+//  CREATE SHORT LINK
+// ════════════════════════════════════
+async function createShortLink() {
+  const destUrl = document.getElementById('destUrl').value.trim();
+  const customSlug = document.getElementById('customSlug').value.trim();
+
+  if (!destUrl) {
+    showMsg('createMsg', 'error', 'Please enter a destination URL');
+    return;
+  }
+
+  if (!destUrl.startsWith('http://') && !destUrl.startsWith('https://')) {
+    showMsg('createMsg', 'error', 'URL must start with http:// or https://');
+    return;
+  }
+
+  if (!sbClient) {
+    showMsg('createMsg', 'error', 'Supabase not connected');
+    return;
+  }
+
+  try {
+    let slug = customSlug;
+    
+    // Validate custom slug
+    if (slug) {
+      if (!/^[a-zA-Z0-9-_]+$/.test(slug)) {
+        showMsg('createMsg', 'error', 'Custom code can only contain letters, numbers, hyphens, and underscores');
+        return;
+      }
+      if (!(await isSlugAvailable(slug))) {
+        showMsg('createMsg', 'error', 'That custom code is already taken');
+        return;
+      }
+    } else {
+      // Generate random slug
+      let attempts = 0;
+      do {
+        slug = generateSlug();
+        attempts++;
+        if (attempts > 10) {
+          slug = generateSlug(5); // Try longer slug
+          break;
+        }
+      } while (!(await isSlugAvailable(slug)));
+    }
+
+    const { error } = await sbClient
+      .from('short_links')
+      .insert({
+        slug: slug,
+        destination_url: destUrl,
+        clicks: 0
+      });
+
+    if (error) throw error;
+
+    const shortUrl = `${window.location.origin}/${slug}`;
+    document.getElementById('resultUrl').textContent = shortUrl;
+    document.getElementById('resultBox').classList.add('active');
+    showMsg('createMsg', 'success', 'Short link created!');
+    
+    // Clear inputs
+    document.getElementById('destUrl').value = '';
+    document.getElementById('customSlug').value = '';
+    
+    // Reload list
+    await loadLinks();
+  } catch(e) {
+    console.error('Create link error:', e);
+    showMsg('createMsg', 'error', 'Failed to create link: ' + e.message);
+  }
+}
+
+// ════════════════════════════════════
+//  LOAD LINKS
+// ════════════════════════════════════
+async function loadLinks() {
+  loadCreds();
+  if (!sbClient) return;
+
+  try {
+    const { data, error } = await sbClient
+      .from('short_links')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+
+    shortLinks = data || [];
+    renderLinks();
+  } catch(e) {
+    console.error('Load links error:', e);
+  }
+}
+
+function renderLinks() {
+  const container = document.getElementById('linksList');
+
+  if (shortLinks.length === 0) {
+    container.innerHTML = '<div class="empty-state"><p>No short links yet. Create one above!</p></div>';
+    return;
+  }
+
+  container.innerHTML = shortLinks.map(link => {
+    const shortUrl = `${window.location.origin}/${link.slug}`;
+    const date = new Date(link.created_at).toLocaleDateString();
+    
+    return `
+      <div class="link-item">
+        <div class="link-info">
+          <div class="link-short">${shortUrl}</div>
+          <div class="link-dest" title="${escapeHtml(link.destination_url)}">→ ${escapeHtml(link.destination_url)}</div>
+          <div class="link-meta">${link.clicks} clicks • Created ${date}</div>
+        </div>
+        <div class="link-actions">
+          <button class="copy-btn" onclick="copyLink('${shortUrl}')">Copy</button>
+          <button class="btn btn-danger btn-small" onclick="deleteLink('${link.id}')">Delete</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+// ════════════════════════════════════
+//  ACTIONS
+// ════════════════════════════════════
+function copyResult() {
+  const text = document.getElementById('resultUrl').textContent;
+  navigator.clipboard.writeText(text);
+  showMsg('createMsg', 'success', 'Copied to clipboard!');
+}
+
+function copyLink(url) {
+  navigator.clipboard.writeText(url);
+}
+
+async function deleteLink(id) {
+  if (!confirm('Delete this short link?')) return;
+
+  try {
+    const { error } = await sbClient
+      .from('short_links')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
+
+    await loadLinks();
+  } catch(e) {
+    console.error('Delete link error:', e);
+    alert('Failed to delete link');
+  }
+}
+
+function showMsg(id, type, text) {
+  const el = document.getElementById(id);
+  el.textContent = text;
+  el.className = 'msg active ' + type;
+  setTimeout(() => el.classList.remove('active'), 4000);
+}
+
+// Allow Enter key to create link
+document.getElementById('destUrl').addEventListener('keypress', (e) => {
+  if (e.key === 'Enter') createShortLink();
+});
+document.getElementById('customSlug').addEventListener('keypress', (e) => {
+  if (e.key === 'Enter') createShortLink();
+});
+
+// ════════════════════════════════════
+//  INIT
+// ════════════════════════════════════
+(async () => {
+  if (await checkAccess()) {
+    await loadLinks();
+  }
+})();
+</script>
+
+</body>
+</html>
