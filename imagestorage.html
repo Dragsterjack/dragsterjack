@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Storage — Dragsterjack</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" type="image/png" href="logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,700;1,400&family=Oswald:wght@500;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --white: #ffffff;
+    --off-white: #f7f7f5;
+    --black: #111111;
+    --gray-1: #333;
+    --gray-2: #666;
+    --gray-3: #999;
+    --gray-4: #ccc;
+    --gray-5: #e8e8e6;
+    --red: #c0392b;
+    --red-light: #e74c3c;
+    --green: #27ae60;
+    --blue: #2980b9;
+    --shadow-md: 0 4px 20px rgba(0,0,0,0.08);
+    --shadow-lg: 0 12px 40px rgba(0,0,0,0.12);
+    --radius: 10px;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--black);
+    color: var(--white);
+    min-height: 100dvh;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .page {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 48px 24px 80px;
+  }
+
+  .header {
+    text-align: center;
+    margin-bottom: 48px;
+    animation: fadeUp 0.5s ease-out both;
+  }
+
+  .title {
+    font-family: 'Oswald', sans-serif;
+    font-weight: 700;
+    font-size: 3rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--white);
+    margin-bottom: 12px;
+  }
+
+  .subtitle {
+    font-size: 1rem;
+    color: var(--gray-4);
+  }
+
+  .upload-section {
+    background: var(--gray-1);
+    border-radius: var(--radius);
+    padding: 32px;
+    margin-bottom: 32px;
+    animation: fadeUp 0.6s ease-out 0.1s both;
+  }
+
+  .upload-area {
+    border: 2px dashed var(--gray-3);
+    border-radius: var(--radius);
+    padding: 48px 24px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s;
+    margin-bottom: 20px;
+  }
+
+  .upload-area:hover {
+    border-color: var(--white);
+    background: rgba(255,255,255,0.05);
+  }
+
+  .upload-area.dragover {
+    border-color: var(--green);
+    background: rgba(39,174,96,0.1);
+  }
+
+  .upload-icon {
+    font-size: 3rem;
+    margin-bottom: 16px;
+  }
+
+  .upload-text {
+    font-size: 1rem;
+    color: var(--gray-4);
+  }
+
+  #fileInput {
+    display: none;
+  }
+
+  .progress-bar {
+    width: 100%;
+    height: 8px;
+    background: var(--gray-2);
+    border-radius: 4px;
+    overflow: hidden;
+    display: none;
+    margin-top: 16px;
+  }
+
+  .progress-bar.active {
+    display: block;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: var(--green);
+    transition: width 0.3s;
+    width: 0%;
+  }
+
+  .msg {
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+    font-size: 0.9rem;
+    display: none;
+  }
+
+  .msg.active {
+    display: block;
+  }
+
+  .msg.success {
+    background: #d4edda;
+    color: #155724;
+  }
+
+  .msg.error {
+    background: #f8d7da;
+    color: #721c24;
+  }
+
+  .files-section {
+    animation: fadeUp 0.7s ease-out 0.2s both;
+  }
+
+  .section-title {
+    font-family: 'Oswald', sans-serif;
+    font-size: 1.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    margin-bottom: 20px;
+    color: var(--white);
+  }
+
+  .files-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 20px;
+  }
+
+  .file-card {
+    background: var(--gray-1);
+    border-radius: var(--radius);
+    overflow: hidden;
+    transition: transform 0.3s, box-shadow 0.3s;
+    cursor: pointer;
+  }
+
+  .file-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .file-preview {
+    width: 100%;
+    height: 200px;
+    background: var(--black);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .file-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .file-preview video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .file-icon {
+    font-size: 4rem;
+    color: var(--gray-3);
+  }
+
+  .file-info {
+    padding: 16px;
+  }
+
+  .file-name {
+    font-weight: 600;
+    margin-bottom: 8px;
+    word-break: break-all;
+    font-size: 0.9rem;
+  }
+
+  .file-meta {
+    font-size: 0.8rem;
+    color: var(--gray-4);
+    margin-bottom: 12px;
+  }
+
+  .file-actions {
+    display: flex;
+    gap: 8px;
+  }
+
+  .btn {
+    background: var(--white);
+    color: var(--black);
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: all 0.2s;
+    font-family: inherit;
+    flex: 1;
+  }
+
+  .btn:hover {
+    background: var(--gray-5);
+    transform: translateY(-1px);
+  }
+
+  .btn-danger {
+    background: var(--red);
+    color: var(--white);
+  }
+
+  .btn-danger:hover {
+    background: var(--red-light);
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 60px 24px;
+    color: var(--gray-3);
+    background: var(--gray-1);
+    border-radius: var(--radius);
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @media (max-width: 640px) {
+    .title { font-size: 2rem; }
+    .files-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+  <div class="header">
+    <h1 class="title">FILE STORAGE</h1>
+    <p class="subtitle">Upload images and videos • Access from any device</p>
+  </div>
+
+  <div class="upload-section">
+    <div class="msg" id="uploadMsg"></div>
+    
+    <div class="upload-area" id="uploadArea">
+      <div class="upload-icon">📁</div>
+      <div class="upload-text">
+        <strong>Click to upload</strong> or drag and drop<br>
+        <small style="color: var(--gray-3);">Images and videos only</small>
+      </div>
+      <input type="file" id="fileInput" accept="image/*,video/*" multiple>
+    </div>
+
+    <div class="progress-bar" id="progressBar">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+  </div>
+
+  <div class="files-section">
+    <h2 class="section-title">Your Files</h2>
+    <div class="files-grid" id="filesGrid">
+      <div class="empty-state">
+        <p>No files uploaded yet</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ════════════════════════════════════
+//  CONSTANTS & STATE
+// ════════════════════════════════════
+const PW_HASH = '88056519922f4b7bc7b2b285c66c6f31ade6dc4959098676f689fc0525174b74';
+let sbClient = null;
+let files = [];
+
+// ⚠️  PASTE YOUR CREDENTIALS HERE
+const HARDCODED_URL = '';
+const HARDCODED_KEY = '';
+const STORAGE_BUCKET = 'file-storage'; // You'll create this bucket in Supabase
+
+// ════════════════════════════════════
+//  SUPABASE INIT
+// ════════════════════════════════════
+function initSupabase(url, key) {
+  try {
+    sbClient = window.supabase.createClient(url, key);
+    return true;
+  } catch(e) {
+    console.error('Supabase init error:', e);
+    return false;
+  }
+}
+
+function loadCreds() {
+  if (HARDCODED_URL && HARDCODED_KEY) {
+    initSupabase(HARDCODED_URL, HARDCODED_KEY);
+    return true;
+  }
+  const url = localStorage.getItem('sb_url');
+  const key = localStorage.getItem('sb_key');
+  if (url && key) {
+    initSupabase(url, key);
+    return true;
+  }
+  return false;
+}
+
+// ════════════════════════════════════
+//  PASSWORD CHECK ON LOAD
+// ════════════════════════════════════
+async function hashStr(str) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+}
+
+async function checkAccess() {
+  const pw = prompt('Password required to access file storage:');
+  if (!pw) {
+    document.body.innerHTML = '<div style="text-align:center;padding:100px;color:#666;">Access denied.</div>';
+    return false;
+  }
+  const hash = await hashStr(pw);
+  if (hash !== PW_HASH) {
+    document.body.innerHTML = '<div style="text-align:center;padding:100px;color:#666;">Incorrect password.</div>';
+    return false;
+  }
+  return true;
+}
+
+// ════════════════════════════════════
+//  FILE UPLOAD
+// ════════════════════════════════════
+const uploadArea = document.getElementById('uploadArea');
+const fileInput = document.getElementById('fileInput');
+
+uploadArea.addEventListener('click', () => fileInput.click());
+
+uploadArea.addEventListener('dragover', (e) => {
+  e.preventDefault();
+  uploadArea.classList.add('dragover');
+});
+
+uploadArea.addEventListener('dragleave', () => {
+  uploadArea.classList.remove('dragover');
+});
+
+uploadArea.addEventListener('drop', (e) => {
+  e.preventDefault();
+  uploadArea.classList.remove('dragover');
+  const droppedFiles = Array.from(e.dataTransfer.files);
+  handleFiles(droppedFiles);
+});
+
+fileInput.addEventListener('change', (e) => {
+  const selectedFiles = Array.from(e.target.files);
+  handleFiles(selectedFiles);
+});
+
+async function handleFiles(filesList) {
+  if (!sbClient) {
+    showMsg('uploadMsg', 'error', 'Supabase not connected');
+    return;
+  }
+
+  // Filter for images and videos only
+  const validFiles = filesList.filter(file => {
+    return file.type.startsWith('image/') || file.type.startsWith('video/');
+  });
+
+  if (validFiles.length === 0) {
+    showMsg('uploadMsg', 'error', 'Please upload only images or videos');
+    return;
+  }
+
+  document.getElementById('progressBar').classList.add('active');
+  let uploaded = 0;
+
+  for (const file of validFiles) {
+    try {
+      // Generate unique filename
+      const timestamp = Date.now();
+      const randomStr = Math.random().toString(36).substring(7);
+      const ext = file.name.split('.').pop();
+      const fileName = `${timestamp}_${randomStr}.${ext}`;
+
+      // Upload to Supabase Storage
+      const { error: uploadError } = await sbClient.storage
+        .from(STORAGE_BUCKET)
+        .upload(fileName, file);
+
+      if (uploadError) throw uploadError;
+
+      // Save metadata to database
+      const { error: dbError } = await sbClient
+        .from('file_metadata')
+        .insert({
+          filename: fileName,
+          original_name: file.name,
+          file_type: file.type,
+          file_size: file.size
+        });
+
+      if (dbError) throw dbError;
+
+      uploaded++;
+      const progress = (uploaded / validFiles.length) * 100;
+      document.getElementById('progressFill').style.width = progress + '%';
+
+    } catch(e) {
+      console.error('Upload error:', e);
+      showMsg('uploadMsg', 'error', `Failed to upload ${file.name}: ${e.message}`);
+    }
+  }
+
+  document.getElementById('progressBar').classList.remove('active');
+  document.getElementById('progressFill').style.width = '0%';
+  showMsg('uploadMsg', 'success', `Successfully uploaded ${uploaded} file(s)!`);
+  fileInput.value = '';
+  
+  // Reload files
+  await loadFiles();
+}
+
+// ════════════════════════════════════
+//  LOAD FILES
+// ════════════════════════════════════
+async function loadFiles() {
+  loadCreds();
+  if (!sbClient) return;
+
+  try {
+    const { data, error } = await sbClient
+      .from('file_metadata')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+
+    files = data || [];
+    renderFiles();
+  } catch(e) {
+    console.error('Load files error:', e);
+  }
+}
+
+function renderFiles() {
+  const grid = document.getElementById('filesGrid');
+
+  if (files.length === 0) {
+    grid.innerHTML = '<div class="empty-state"><p>No files uploaded yet</p></div>';
+    return;
+  }
+
+  grid.innerHTML = files.map(file => {
+    const { data } = sbClient.storage.from(STORAGE_BUCKET).getPublicUrl(file.filename);
+    const publicUrl = data.publicUrl;
+    
+    const isImage = file.file_type.startsWith('image/');
+    const isVideo = file.file_type.startsWith('video/');
+    const fileSize = formatFileSize(file.file_size);
+    const uploadDate = new Date(file.created_at).toLocaleDateString();
+
+    return `
+      <div class="file-card">
+        <div class="file-preview">
+          ${isImage ? `<img src="${publicUrl}" alt="${file.original_name}">` : ''}
+          ${isVideo ? `<video src="${publicUrl}" muted></video>` : ''}
+          ${!isImage && !isVideo ? '<div class="file-icon">📄</div>' : ''}
+        </div>
+        <div class="file-info">
+          <div class="file-name">${escapeHtml(file.original_name)}</div>
+          <div class="file-meta">${fileSize} • ${uploadDate}</div>
+          <div class="file-actions">
+            <button class="btn" onclick="downloadFile('${file.filename}', '${escapeHtml(file.original_name)}')">Download</button>
+            <button class="btn btn-danger" onclick="deleteFile('${file.id}', '${file.filename}')">Delete</button>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function formatFileSize(bytes) {
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+  if (bytes < 1024 * 1024 * 1024) return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+  return (bytes / (1024 * 1024 * 1024)).toFixed(1) + ' GB';
+}
+
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+// ════════════════════════════════════
+//  FILE ACTIONS
+// ════════════════════════════════════
+async function downloadFile(filename, originalName) {
+  try {
+    const { data, error } = await sbClient.storage
+      .from(STORAGE_BUCKET)
+      .download(filename);
+
+    if (error) throw error;
+
+    // Create download link
+    const url = URL.createObjectURL(data);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = originalName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  } catch(e) {
+    console.error('Download error:', e);
+    alert('Failed to download file');
+  }
+}
+
+async function deleteFile(id, filename) {
+  if (!confirm('Delete this file permanently?')) return;
+
+  try {
+    // Delete from storage
+    const { error: storageError } = await sbClient.storage
+      .from(STORAGE_BUCKET)
+      .remove([filename]);
+
+    if (storageError) throw storageError;
+
+    // Delete from database
+    const { error: dbError } = await sbClient
+      .from('file_metadata')
+      .delete()
+      .eq('id', id);
+
+    if (dbError) throw dbError;
+
+    await loadFiles();
+  } catch(e) {
+    console.error('Delete error:', e);
+    alert('Failed to delete file');
+  }
+}
+
+function showMsg(id, type, text) {
+  const el = document.getElementById(id);
+  el.textContent = text;
+  el.className = 'msg active ' + type;
+  setTimeout(() => el.classList.remove('active'), 4000);
+}
+
+// ════════════════════════════════════
+//  INIT
+// ════════════════════════════════════
+(async () => {
+  if (await checkAccess()) {
+    await loadFiles();
+  }
+})();
+</script>
+
+</body>
+</html>
