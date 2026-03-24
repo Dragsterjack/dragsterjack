@@ -65,8 +65,14 @@ async function redirect() {
   // Get the slug from the URL
   const path = window.location.pathname.slice(1); // Remove leading /
   
+  // Handle photo galleries
+  if (path.startsWith('photos/')) {
+    window.location.href = '/photo-gallery.html';
+    return;
+  }
+  
   // Skip known pages
-  if (!path || path === 'music' || path === 'aura' || path === 'tip' || path === 'imagestorage' || path === 'index.html' || path.includes('.')) {
+  if (!path || path === 'music' || path === 'aura' || path === 'tip' || path === 'imagestorage' || path === 'photos' || path === 'index.html' || path.includes('.')) {
     showError();
     return;
   }

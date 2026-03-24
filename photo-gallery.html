@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Photo Gallery — Dragsterjack</title>
+<link rel="icon" type="image/png" href="../logo.png">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,700;1,400&family=Oswald:wght@500;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --white: #ffffff;
+    --black: #111111;
+    --gray-1: #1a1a1a;
+    --gray-2: #333;
+    --gray-3: #666;
+    --gray-4: #999;
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--black);
+    color: var(--white);
+    min-height: 100vh;
+  }
+
+  .header {
+    padding: 48px 24px;
+    text-align: center;
+    border-bottom: 1px solid var(--gray-2);
+  }
+
+  .title {
+    font-family: 'Oswald', sans-serif;
+    font-size: 2.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 8px;
+  }
+
+  .subtitle {
+    color: var(--gray-4);
+  }
+
+  .controls {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 24px;
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
+    border-bottom: 1px solid var(--gray-2);
+  }
+
+  .btn {
+    background: var(--white);
+    color: var(--black);
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 0.95rem;
+    transition: all 0.2s;
+  }
+
+  .btn:hover {
+    transform: translateY(-2px);
+  }
+
+  .btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .btn-secondary {
+    background: var(--gray-2);
+    color: var(--white);
+  }
+
+  .gallery {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 48px 24px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+  }
+
+  .photo-card {
+    position: relative;
+    aspect-ratio: 3/2;
+    overflow: hidden;
+    border-radius: 8px;
+    cursor: pointer;
+    background: var(--gray-1);
+    border: 3px solid transparent;
+    transition: all 0.3s;
+  }
+
+  .photo-card.selected {
+    border-color: var(--white);
+  }
+
+  .photo-card img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .checkbox {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 32px;
+    height: 32px;
+    background: rgba(0,0,0,0.7);
+    border: 2px solid var(--white);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--white);
+    font-size: 1.2rem;
+    backdrop-filter: blur(4px);
+  }
+
+  .loading {
+    text-align: center;
+    padding: 100px 24px;
+    color: var(--gray-4);
+  }
+
+  .spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid var(--gray-2);
+    border-top-color: var(--white);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 20px;
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  .error {
+    text-align: center;
+    padding: 100px 24px;
+    color: var(--gray-4);
+  }
+
+  @media (max-width: 768px) {
+    .title { font-size: 1.8rem; }
+    .gallery { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div id="loading" class="loading">
+  <div class="spinner"></div>
+  <p>Loading gallery...</p>
+</div>
+
+<div id="content" style="display: none;">
+  <div class="header">
+    <h1 class="title" id="galleryTitle"></h1>
+    <p class="subtitle" id="photoCount"></p>
+  </div>
+
+  <div class="controls">
+    <button class="btn" onclick="selectAll()">Select All</button>
+    <button class="btn btn-secondary" onclick="deselectAll()">Deselect All</button>
+    <button class="btn" id="downloadBtn" onclick="downloadSelected()" disabled>Download Selected (0)</button>
+    <button class="btn" onclick="downloadAll()">Download All</button>
+  </div>
+
+  <div class="gallery" id="gallery"></div>
+</div>
+
+<div id="error" class="error" style="display: none;">
+  <h2>Access Denied</h2>
+  <p>Incorrect password or gallery not found.</p>
+</div>
+
+<script>
+let sbClient = null;
+let photos = [];
+let selectedPhotos = new Set();
+
+const HARDCODED_URL = '';
+const HARDCODED_KEY = '';
+const STORAGE_BUCKET = 'photos';
+
+function initSupabase(url, key) {
+  sbClient = window.supabase.createClient(url, key);
+}
+
+function loadCreds() {
+  if (HARDCODED_URL && HARDCODED_KEY) {
+    initSupabase(HARDCODED_URL, HARDCODED_KEY);
+  } else {
+    const url = localStorage.getItem('sb_url');
+    const key = localStorage.getItem('sb_key');
+    if (url && key) initSupabase(url, key);
+  }
+}
+
+async function loadGallery() {
+  const path = window.location.pathname;
+  const slug = path.split('/').pop();
+  
+  if (!slug || slug === 'photos') {
+    window.location.href = '/photos';
+    return;
+  }
+  
+  try {
+    const { data: gallery, error: galleryError } = await sbClient
+      .from('photo_galleries')
+      .select('*')
+      .eq('slug', slug)
+      .single();
+    
+    if (galleryError || !gallery) {
+      showError();
+      return;
+    }
+    
+    const password = prompt(`This gallery is password protected.\nEnter password:`);
+    
+    if (password !== gallery.password) {
+      showError();
+      return;
+    }
+    
+    const { data: galleryPhotos, error: photosError } = await sbClient
+      .from('photos')
+      .select('*')
+      .eq('gallery_id', gallery.id)
+      .order('sort_order')
+      .order('created_at', { ascending: false });
+    
+    if (photosError) throw photosError;
+    
+    photos = galleryPhotos || [];
+    
+    document.getElementById('galleryTitle').textContent = gallery.name;
+    document.getElementById('photoCount').textContent = `${photos.length} photo${photos.length !== 1 ? 's' : ''}`;
+    
+    renderGallery();
+    
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('content').style.display = 'block';
+    
+  } catch(e) {
+    console.error('Load error:', e);
+    showError();
+  }
+}
+
+function renderGallery() {
+  const grid = document.getElementById('gallery');
+  
+  if (photos.length === 0) {
+    grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 60px; color: var(--gray-4);">No photos in this gallery yet</div>';
+    return;
+  }
+  
+  grid.innerHTML = photos.map((photo, index) => {
+    const { data } = sbClient.storage.from(STORAGE_BUCKET).getPublicUrl(photo.filename);
+    const isSelected = selectedPhotos.has(index);
+    
+    return `
+      <div class="photo-card ${isSelected ? 'selected' : ''}" onclick="toggleSelect(${index})">
+        <img src="${data.publicUrl}" alt="${photo.original_name}" loading="lazy">
+        <div class="checkbox">${isSelected ? '✓' : ''}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+function toggleSelect(index) {
+  if (selectedPhotos.has(index)) {
+    selectedPhotos.delete(index);
+  } else {
+    selectedPhotos.add(index);
+  }
+  renderGallery();
+  updateDownloadBtn();
+}
+
+function selectAll() {
+  selectedPhotos = new Set(photos.map((_, i) => i));
+  renderGallery();
+  updateDownloadBtn();
+}
+
+function deselectAll() {
+  selectedPhotos.clear();
+  renderGallery();
+  updateDownloadBtn();
+}
+
+function updateDownloadBtn() {
+  const btn = document.getElementById('downloadBtn');
+  btn.textContent = `Download Selected (${selectedPhotos.size})`;
+  btn.disabled = selectedPhotos.size === 0;
+}
+
+async function downloadSelected() {
+  if (selectedPhotos.size === 0) return;
+  
+  const selectedIndices = Array.from(selectedPhotos);
+  const photosToDownload = selectedIndices.map(i => photos[i]);
+  
+  await downloadPhotos(photosToDownload);
+}
+
+async function downloadAll() {
+  await downloadPhotos(photos);
+}
+
+async function downloadPhotos(photoList) {
+  if (photoList.length === 1) {
+    await downloadSinglePhoto(photoList[0]);
+    return;
+  }
+  
+  const zip = new JSZip();
+  const btn = document.getElementById('downloadBtn');
+  btn.textContent = `Downloading... (0/${photoList.length})`;
+  btn.disabled = true;
+  
+  for (let i = 0; i < photoList.length; i++) {
+    const photo = photoList[i];
+    
+    try {
+      const { data, error } = await sbClient.storage
+        .from(STORAGE_BUCKET)
+        .download(photo.filename);
+      
+      if (error) throw error;
+      
+      zip.file(photo.original_name, data);
+      btn.textContent = `Downloading... (${i + 1}/${photoList.length})`;
+    } catch(e) {
+      console.error('Download error:', e);
+    }
+  }
+  
+  btn.textContent = 'Creating ZIP...';
+  const content = await zip.generateAsync({ type: 'blob' });
+  
+  const url = URL.createObjectURL(content);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `photos_${Date.now()}.zip`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  
+  updateDownloadBtn();
+}
+
+async function downloadSinglePhoto(photo) {
+  try {
+    const { data, error } = await sbClient.storage
+      .from(STORAGE_BUCKET)
+      .download(photo.filename);
+    
+    if (error) throw error;
+    
+    const url = URL.createObjectURL(data);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = photo.original_name;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  } catch(e) {
+    console.error('Download error:', e);
+    alert('Download failed');
+  }
+}
+
+function showError() {
+  document.getElementById('loading').style.display = 'none';
+  document.getElementById('error').style.display = 'block';
+}
+
+loadCreds();
+loadGallery();
+</script>
+
+</body>
+</html>
