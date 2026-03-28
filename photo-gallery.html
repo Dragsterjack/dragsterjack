@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Photo Gallery — Dragsterjack</title>
-<link rel="icon" type="image/png" href="../logo.png">
+<link rel="icon" type="image/png" href="logo.png">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,700;1,400&family=Oswald:wght@500;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
@@ -194,8 +194,8 @@ let sbClient = null;
 let photos = [];
 let selectedPhotos = new Set();
 
-const HARDCODED_URL = 'https://ivpmrajkrgcojvdcavwn.supabase.co';
-const HARDCODED_KEY = 'sb_publishable_eDKUL25CG1-D3uAiZp7Bjg_iSr8knRX';
+const HARDCODED_URL = '';
+const HARDCODED_KEY = '';
 const STORAGE_BUCKET = 'photos';
 
 function initSupabase(url, key) {
@@ -214,10 +214,10 @@ function loadCreds() {
 
 async function loadGallery() {
   const path = window.location.pathname;
-  const slug = path.split('/').pop();
+  const slug = path.slice(1); // Remove leading slash to get slug
   
-  if (!slug || slug === 'photos') {
-    window.location.href = '/photos';
+  if (!slug || slug === 'photo-gallery.html') {
+    window.location.href = '/';
     return;
   }
   

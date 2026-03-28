@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dragsterjack</title>
-<meta name="description" content="Dragsterjack — Content creator focused on fun & outdoors.">
+<title>Photos — Dragsterjack</title>
+<meta name="description" content="Photography by Dragsterjack">
 <link rel="icon" type="image/png" href="logo.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,700;1,400&family=Oswald:wght@500;700&display=swap" rel="stylesheet">
@@ -14,897 +14,382 @@
 
   :root {
     --white: #ffffff;
-    --off-white: #f7f7f5;
     --black: #111111;
-    --gray-1: #333;
-    --gray-2: #666;
-    --gray-3: #999;
-    --gray-4: #ccc;
+    --gray-1: #1a1a1a;
+    --gray-2: #333;
+    --gray-3: #666;
+    --gray-4: #999;
     --gray-5: #e8e8e6;
     --red: #c0392b;
-    --red-light: #e74c3c;
-    --red-bg: rgba(192,57,43,0.06);
-    --green: #27ae60;
-    --blue: #2980b9;
-    --blue-bg: rgba(41,128,185,0.08);
-    --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
-    --shadow-md: 0 4px 20px rgba(0,0,0,0.08);
-    --shadow-lg: 0 12px 40px rgba(0,0,0,0.12);
-    --radius: 10px;
   }
-
-  html { scroll-behavior: smooth; }
 
   body {
     font-family: 'DM Sans', sans-serif;
-    background: var(--white);
-    color: var(--black);
-    min-height: 100dvh;
-    -webkit-font-smoothing: antialiased;
+    background: var(--black);
+    color: var(--white);
+    min-height: 100vh;
   }
 
-  /* ── Main Layout ── */
-  .page {
-    max-width: 520px;
+  .header {
+    padding: 48px 24px;
+    text-align: center;
+    border-bottom: 1px solid var(--gray-2);
+  }
+
+  .title {
+    font-family: 'Oswald', sans-serif;
+    font-size: 3rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 12px;
+  }
+
+  .subtitle {
+    color: var(--gray-4);
+  }
+
+  .gallery {
+    max-width: 1400px;
     margin: 0 auto;
-    padding: 48px 24px 80px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+    padding: 48px 24px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
   }
 
-  /* ── Avatar ── */
-  .avatar-ring {
-    width: 140px;
-    height: 140px;
-    border-radius: 50%;
-    padding: 3px;
-    background: linear-gradient(145deg, var(--black) 0%, var(--gray-2) 100%);
-    animation: dropIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+  .photo-card {
+    position: relative;
+    aspect-ratio: 3/2;
+    overflow: hidden;
+    border-radius: 8px;
     cursor: pointer;
+    background: var(--gray-1);
   }
 
-  .avatar {
+  .photo-card img {
     width: 100%;
     height: 100%;
-    border-radius: 50%;
     object-fit: cover;
-    object-position: top;
-    display: block;
-    border: 3px solid var(--white);
+    transition: transform 0.3s;
   }
 
-  @keyframes dropIn {
-    from { opacity: 0; transform: translateY(-20px) scale(0.95); }
-    to { opacity: 1; transform: translateY(0) scale(1); }
+  .photo-card:hover img {
+    transform: scale(1.05);
   }
-
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(16px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  /* ── Identity ── */
-  .identity {
-    text-align: center;
-    margin-top: 28px;
-    animation: fadeUp 0.5s ease-out 0.15s both;
-  }
-
-  .name {
-    font-family: 'Oswald', sans-serif;
-    font-weight: 700;
-    font-size: 2rem;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    color: var(--black);
-    line-height: 1.1;
-  }
-
-  .bio {
-    margin-top: 14px;
-    font-size: 0.95rem;
-    color: var(--gray-2);
-    line-height: 1.65;
-    max-width: 380px;
-  }
-
-  /* ── Divider ── */
-  .divider {
-    width: 40px;
-    height: 2px;
-    background: var(--gray-5);
-    margin: 32px 0;
-    animation: fadeUp 0.5s ease-out 0.25s both;
-  }
-
-  /* ── Latest Post Card ── */
-  .latest-post {
-    width: 100%;
-    animation: fadeUp 0.5s ease-out 0.3s both;
-    display: none;
-  }
-
-  .latest-post.visible { display: block; }
-
-  .section-label {
-    font-family: 'Oswald', sans-serif;
-    font-size: 0.7rem;
-    font-weight: 500;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    color: var(--gray-3);
-    margin-bottom: 14px;
-  }
-
-  .post-card {
-    display: block;
-    text-decoration: none;
-    color: inherit;
-    background: var(--white);
-    border: 1px solid var(--gray-5);
-    border-radius: var(--radius);
-    overflow: hidden;
-    transition: box-shadow 0.25s ease, transform 0.25s ease, border-color 0.25s ease;
-  }
-
-  .post-card:hover {
-    box-shadow: var(--shadow-md);
-    transform: translateY(-2px);
-    border-color: var(--gray-4);
-  }
-
-  .post-banner {
-    width: 100%;
-    aspect-ratio: 16/9;
-    object-fit: cover;
-    display: block;
-    background: var(--off-white);
-  }
-
-  .post-body { padding: 18px 20px 20px; }
-
-  .post-platform-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    font-size: 0.7rem;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--gray-3);
-    margin-bottom: 8px;
-  }
-
-  .post-platform-badge svg { width: 13px; height: 13px; fill: currentColor; }
-
-  .post-title {
-    font-family: 'Oswald', sans-serif;
-    font-weight: 700;
-    font-size: 1.15rem;
-    line-height: 1.3;
-    color: var(--black);
-  }
-
-  .post-desc {
-    margin-top: 8px;
-    font-size: 0.88rem;
-    color: var(--gray-2);
-    line-height: 1.55;
-  }
-
-  /* ── Social Links ── */
-  .links {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    margin-top: 32px;
-  }
-
-  .link-btn {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    width: 100%;
-    padding: 14px 18px;
-    background: var(--off-white);
-    border: 1px solid transparent;
-    border-radius: var(--radius);
-    color: var(--black);
-    text-decoration: none;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 0.95rem;
-    font-weight: 600;
-    transition: all 0.2s ease;
-    cursor: pointer;
-    animation: fadeUp 0.5s ease-out both;
-  }
-
-  .link-btn:hover {
-    background: var(--white);
-    border-color: var(--gray-5);
-    box-shadow: var(--shadow-sm);
-    transform: translateY(-1px);
-  }
-
-  .link-icon { width: 22px; height: 22px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
-  .link-icon svg { width: 100%; height: 100%; fill: var(--gray-1); }
-
-  .link-handle {
-    margin-left: auto;
-    font-size: 0.82rem;
-    color: var(--gray-3);
-    font-weight: 400;
-  }
-
-  /* ── Footer ── */
-  .footer-row {
-    margin-top: 48px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    animation: fadeUp 0.5s ease-out 0.55s both;
-  }
-
-  .footer-text { font-size: 0.72rem; color: var(--gray-4); letter-spacing: 0.06em; }
 
   .admin-trigger {
-    background: none;
-    border: none;
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    width: 56px;
+    height: 56px;
+    background: var(--white);
+    color: var(--black);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     cursor: pointer;
-    padding: 4px;
-    opacity: 0.15;
-    transition: opacity 0.3s;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    transition: all 0.3s;
+    z-index: 100;
   }
 
-  .admin-trigger:hover { opacity: 0.5; }
-  .admin-trigger svg { width: 14px; height: 14px; fill: var(--gray-3); }
+  .admin-trigger:hover {
+    transform: scale(1.1);
+  }
 
-  /* ── Modal ── */
-  .modal-overlay {
+  .modal {
     display: none;
     position: fixed;
     inset: 0;
-    background: rgba(0,0,0,0.4);
+    background: rgba(0,0,0,0.9);
     z-index: 1000;
-    backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-  }
-
-  .modal-overlay.open { display: flex; }
-
-  .modal {
-    background: var(--white);
-    border-radius: 14px;
-    width: 100%;
-    max-width: 520px;
-    max-height: 92vh;
     overflow-y: auto;
-    box-shadow: var(--shadow-lg);
-    animation: modalIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
-    display: flex;
-    flex-direction: column;
   }
 
-  @keyframes modalIn {
-    from { opacity: 0; transform: scale(0.95) translateY(10px); }
-    to { opacity: 1; transform: scale(1) translateY(0); }
+  .modal.active {
+    display: block;
+  }
+
+  .modal-content {
+    max-width: 900px;
+    margin: 48px auto;
+    background: var(--gray-1);
+    border-radius: 12px;
+    padding: 32px;
   }
 
   .modal-header {
     display: flex;
-    align-items: center;
     justify-content: space-between;
-    padding: 20px 24px 0;
-    flex-shrink: 0;
+    align-items: center;
+    margin-bottom: 32px;
   }
 
   .modal-title {
     font-family: 'Oswald', sans-serif;
-    font-weight: 700;
-    font-size: 1.1rem;
+    font-size: 2rem;
     text-transform: uppercase;
-    letter-spacing: 0.04em;
   }
 
-  .modal-close {
+  .close-btn {
     background: none;
     border: none;
+    color: var(--white);
+    font-size: 2rem;
     cursor: pointer;
-    padding: 4px;
-    color: var(--gray-3);
-    font-size: 1.4rem;
-    line-height: 1;
-    transition: color 0.2s;
+    padding: 0;
+    width: 40px;
+    height: 40px;
   }
 
-  .modal-close:hover { color: var(--black); }
-
-  /* ── Tabs ── */
   .tabs {
     display: flex;
-    gap: 2px;
-    padding: 16px 24px 0;
-    border-bottom: 1px solid var(--gray-5);
-    overflow-x: auto;
-    flex-shrink: 0;
+    gap: 12px;
+    margin-bottom: 32px;
+    border-bottom: 1px solid var(--gray-2);
   }
 
-  .tab-btn {
+  .tab {
+    padding: 12px 24px;
     background: none;
     border: none;
-    padding: 8px 14px 10px;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 0.82rem;
-    font-weight: 700;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    color: var(--gray-3);
+    color: var(--gray-4);
     cursor: pointer;
+    font-size: 1rem;
+    font-weight: 600;
     border-bottom: 2px solid transparent;
-    margin-bottom: -1px;
-    white-space: nowrap;
-    transition: color 0.2s, border-color 0.2s;
-  }
-
-  .tab-btn.active {
-    color: var(--black);
-    border-bottom-color: var(--black);
-  }
-
-  .tab-btn:hover { color: var(--black); }
-
-  .tab-panel { display: none; }
-  .tab-panel.active { display: block; }
-
-  .modal-body { padding: 20px 24px 24px; overflow-y: auto; }
-
-  /* ── Password Gate ── */
-  .pw-gate { display: flex; flex-direction: column; gap: 12px; }
-  .pw-gate p { font-size: 0.88rem; color: var(--gray-2); }
-  .input-row { display: flex; gap: 8px; }
-
-  /* ── Form Styles ── */
-  .field { margin-bottom: 16px; }
-
-  .field-label {
-    display: block;
-    font-size: 0.78rem;
-    font-weight: 700;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: var(--gray-3);
-    margin-bottom: 6px;
-  }
-
-  .field-hint {
-    display: block;
-    font-size: 0.75rem;
-    color: var(--gray-3);
-    margin-top: 4px;
-    line-height: 1.4;
-  }
-
-  .field-input,
-  .field-select,
-  .field-textarea {
-    width: 100%;
-    padding: 10px 14px;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 0.92rem;
-    color: var(--black);
-    background: var(--off-white);
-    border: 1px solid var(--gray-5);
-    border-radius: 8px;
-    outline: none;
-    transition: border-color 0.2s, box-shadow 0.2s;
-  }
-
-  .field-input:focus,
-  .field-select:focus,
-  .field-textarea:focus {
-    border-color: var(--gray-4);
-    box-shadow: 0 0 0 3px rgba(0,0,0,0.04);
-  }
-
-  .field-textarea { resize: vertical; min-height: 80px; }
-  .field-select { cursor: pointer; }
-
-  .btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    padding: 10px 20px;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 0.88rem;
-    font-weight: 700;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
     transition: all 0.2s;
   }
 
-  .btn-primary { background: var(--black); color: var(--white); }
-  .btn-primary:hover { background: var(--gray-1); transform: translateY(-1px); box-shadow: var(--shadow-sm); }
-  .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-
-  .btn-secondary { background: var(--off-white); color: var(--gray-1); border: 1px solid var(--gray-5); }
-  .btn-secondary:hover { background: var(--gray-5); }
-
-  .btn-danger { background: var(--red-bg); color: var(--red); }
-  .btn-danger:hover { background: rgba(192,57,43,0.12); }
-
-  .btn-sm { padding: 6px 12px; font-size: 0.8rem; }
-
-  .btn-row { display: flex; gap: 10px; margin-top: 8px; flex-wrap: wrap; }
-
-  .error-msg { font-size: 0.82rem; color: var(--red); margin-top: 6px; }
-
-  .success-msg {
-    font-size: 0.85rem;
-    color: var(--green);
-    font-weight: 600;
-    padding: 10px 14px;
-    background: rgba(39,174,96,0.08);
-    border-radius: 8px;
-    margin-top: 12px;
+  .tab.active {
+    color: var(--white);
+    border-bottom-color: var(--white);
   }
 
-  .info-box {
-    font-size: 0.82rem;
-    color: var(--blue);
-    padding: 10px 14px;
-    background: var(--blue-bg);
-    border-radius: 8px;
-    margin-bottom: 16px;
-    line-height: 1.5;
-  }
-
-  .info-box code {
-    font-family: monospace;
-    font-size: 0.82rem;
-    background: rgba(41,128,185,0.12);
-    padding: 1px 4px;
-    border-radius: 3px;
-  }
-
-  .banner-preview {
-    width: 100%;
-    aspect-ratio: 16/9;
-    object-fit: cover;
-    border-radius: 8px;
-    margin-top: 8px;
+  .tab-content {
     display: none;
-    border: 1px solid var(--gray-5);
   }
 
-  .banner-preview.visible { display: block; }
-
-  /* ── Links Manager ── */
-  .links-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
-
-  .link-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 10px 12px;
-    background: var(--off-white);
-    border: 1px solid var(--gray-5);
-    border-radius: 8px;
+  .tab-content.active {
+    display: block;
   }
 
-  .link-item-label { flex: 1; font-size: 0.88rem; font-weight: 600; min-width: 0; }
-  .link-item-url { flex: 1.5; font-size: 0.78rem; color: var(--gray-3); truncate: ellipsis; overflow: hidden; white-space: nowrap; min-width: 0; }
-  .link-item-actions { display: flex; gap: 6px; flex-shrink: 0; }
-
-  .add-link-form {
-    padding: 16px;
-    background: var(--off-white);
-    border: 1px solid var(--gray-5);
-    border-radius: 8px;
-    margin-bottom: 12px;
+  .form-group {
+    margin-bottom: 20px;
   }
 
-  .add-link-form h4 {
-    font-family: 'Oswald', sans-serif;
-    font-size: 0.8rem;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--gray-3);
-    margin-bottom: 12px;
-  }
-
-  /* ── Setup status ── */
-  .setup-status {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 12px;
-    border-radius: 8px;
-    font-size: 0.82rem;
+  .form-label {
+    display: block;
     font-weight: 600;
-    margin-bottom: 16px;
+    margin-bottom: 8px;
+    font-size: 0.9rem;
   }
 
-  .setup-status.connected { background: rgba(39,174,96,0.1); color: var(--green); }
-  .setup-status.disconnected { background: var(--red-bg); color: var(--red); }
-  .setup-status-dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
-
-  /* ── SQL box ── */
-  .sql-box {
-    background: #1a1a2e;
-    color: #e0e0ff;
+  .form-input, .form-select {
+    width: 100%;
+    padding: 12px 16px;
+    background: var(--black);
+    border: 1px solid var(--gray-2);
     border-radius: 8px;
-    padding: 14px 16px;
-    font-family: monospace;
-    font-size: 0.78rem;
-    line-height: 1.6;
-    white-space: pre;
-    overflow-x: auto;
-    margin: 12px 0;
-    position: relative;
+    color: var(--white);
+    font-size: 0.95rem;
+    font-family: inherit;
   }
 
-  .copy-sql-btn {
-    position: absolute;
-    top: 8px;
-    right: 8px;
-    background: rgba(255,255,255,0.1);
-    color: #aaa;
+  .form-input:focus, .form-select:focus {
+    outline: none;
+    border-color: var(--white);
+  }
+
+  .btn {
+    background: var(--white);
+    color: var(--black);
     border: none;
-    border-radius: 5px;
-    padding: 4px 8px;
-    font-size: 0.72rem;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-weight: 600;
     cursor: pointer;
-    transition: background 0.2s;
+    font-size: 0.95rem;
+    transition: all 0.2s;
   }
 
-  .copy-sql-btn:hover { background: rgba(255,255,255,0.2); color: white; }
-
-  /* ── Spinner ── */
-  .spinner {
-    display: inline-block;
-    width: 14px;
-    height: 14px;
-    border: 2px solid rgba(255,255,255,0.3);
-    border-top-color: white;
-    border-radius: 50%;
-    animation: spin 0.6s linear infinite;
+  .btn:hover {
+    transform: translateY(-2px);
   }
 
-  @keyframes spin { to { transform: rotate(360deg); } }
+  .btn-danger {
+    background: var(--red);
+    color: var(--white);
+  }
 
-  /* ── Responsive ── */
-  @media (max-width: 480px) {
-    .page { padding: 36px 20px 60px; }
-    .avatar-ring { width: 120px; height: 120px; }
-    .name { font-size: 1.7rem; }
-    .link-handle { display: none; }
-    .modal { max-height: 96vh; }
-    .link-item-url { display: none; }
+  .upload-area {
+    border: 2px dashed var(--gray-3);
+    border-radius: 8px;
+    padding: 48px 24px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+
+  .upload-area:hover {
+    border-color: var(--white);
+    background: rgba(255,255,255,0.05);
+  }
+
+  .gallery-list {
+    display: grid;
+    gap: 16px;
+  }
+
+  .gallery-item {
+    background: var(--black);
+    padding: 20px;
+    border-radius: 8px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 16px;
+    align-items: center;
+  }
+
+  .gallery-info h3 {
+    margin-bottom: 8px;
+  }
+
+  .gallery-meta {
+    color: var(--gray-4);
+    font-size: 0.85rem;
+  }
+
+  .gallery-actions {
+    display: flex;
+    gap: 8px;
+  }
+
+  .msg {
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+    display: none;
+  }
+
+  .msg.active {
+    display: block;
+  }
+
+  .msg.success {
+    background: #d4edda;
+    color: #155724;
+  }
+
+  .msg.error {
+    background: #f8d7da;
+    color: #721c24;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 60px 24px;
+    color: var(--gray-4);
+  }
+
+  #fileInput {
+    display: none;
+  }
+
+  @media (max-width: 768px) {
+    .title { font-size: 2rem; }
+    .gallery { grid-template-columns: 1fr; }
+    .gallery-item { grid-template-columns: 1fr; }
   }
 </style>
 </head>
 <body>
 
-<div class="page">
-
-  <div class="avatar-ring" onclick="openAdmin()" title="Admin">
-    <img class="avatar" id="siteAvatar" src="logo.png" alt="Dragsterjack" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect fill=%22%23111%22 width=%22100%22 height=%22100%22/><text fill=%22%23fff%22 font-size=%2240%22 x=%2250%22 y=%2265%22 text-anchor=%22middle%22>DJ</text></svg>'">
-  </div>
-
-  <div class="identity">
-    <h1 class="name" id="siteName">Dragsterjack</h1>
-    <p class="bio" id="siteBio">I am a content creator out of the USA focused on anything that is fun &amp; outdoors. Mainly, I ride stuff with motors!</p>
-  </div>
-
-  <div class="divider"></div>
-
-  <!-- Latest Post -->
-  <div class="latest-post" id="latestPost">
-    <p class="section-label">Latest Post</p>
-    <a class="post-card" id="postCard" href="#" target="_blank" rel="noopener">
-      <img class="post-banner" id="postBanner" src="" alt="">
-      <div class="post-body">
-        <div class="post-platform-badge" id="postPlatform"></div>
-        <div class="post-title" id="postTitle"></div>
-        <div class="post-desc" id="postDesc"></div>
-      </div>
-    </a>
-  </div>
-
-  <!-- Music Link -->
-  <a href="/music" class="link-btn" style="animation-delay: 0.3s; margin-bottom: 16px;">
-    <span class="link-icon">
-      <svg viewBox="0 0 24 24" fill="currentColor">
-        <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
-      </svg>
-    </span>
-    <span>Music</span>
-    <span class="link-handle">What I'm listening to</span>
-  </a>
-
-  <!-- Social Links -->
-  <div class="links" id="socialLinks"></div>
-
-  <div class="footer-row">
-    <span class="footer-text" id="footerText">&copy; Dragsterjack 2025</span>
-    <button class="admin-trigger" onclick="openAdmin()" aria-label="Admin">
-      <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.31.06-.63.06-.94 0-.31-.02-.63-.06-.94l2.03-1.58a.49.49 0 00.12-.61l-1.92-3.32a.49.49 0 00-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.48.48 0 00-.48-.41h-3.84a.48.48 0 00-.48.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96a.49.49 0 00-.59.22L2.74 8.87a.48.48 0 00.12.61l2.03 1.58c-.04.31-.06.63-.06.94s.02.63.06.94l-2.03 1.58a.49.49 0 00-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.26.41.48.41h3.84c.24 0 .44-.17.48-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6A3.6 3.6 0 1115.6 12 3.61 3.61 0 0112 15.6z"/></svg>
-    </button>
-  </div>
-
+<div class="header">
+  <h1 class="title">Photography</h1>
+  <p class="subtitle">Sports & Action</p>
 </div>
 
-<!-- ════════════════════════════════════
-     ADMIN MODAL
-════════════════════════════════════ -->
-<div class="modal-overlay" id="adminModal">
-  <div class="modal">
+<div class="gallery" id="showcaseGallery">
+  <div class="empty-state">
+    <p>No photos in showcase yet</p>
+  </div>
+</div>
 
+<div class="admin-trigger" onclick="openAdmin()">⚙️</div>
+
+<!-- Admin Modal -->
+<div class="modal" id="adminModal">
+  <div class="modal-content">
     <div class="modal-header">
-      <span class="modal-title" id="modalTitle">Admin</span>
-      <button class="modal-close" onclick="closeAdmin()">&times;</button>
+      <h2 class="modal-title">Admin Panel</h2>
+      <button class="close-btn" onclick="closeAdmin()">×</button>
     </div>
 
-    <!-- Password Gate -->
-    <div class="modal-body" id="pwGate">
-      <div class="pw-gate">
-        <p>Enter your admin password to continue.</p>
-        <div class="input-row">
-          <input type="password" class="field-input" id="pwInput" placeholder="Password" onkeydown="if(event.key==='Enter')checkPw()">
-          <button class="btn btn-primary" onclick="checkPw()">Go</button>
-        </div>
-        <div class="error-msg" id="pwError" style="display:none;">Wrong password. Try again.</div>
-      </div>
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('showcase')">Showcase Photos</button>
+      <button class="tab" onclick="switchTab('galleries')">Client Galleries</button>
     </div>
 
-    <!-- Admin Panel (shown after auth) -->
-    <div id="adminPanel" style="display:none; flex-direction:column; flex:1; overflow:hidden;">
+    <div class="msg" id="adminMsg"></div>
 
-      <div class="tabs">
-        <button class="tab-btn active" onclick="switchTab('setup')" id="tab-setup">⚙ Setup</button>
-        <button class="tab-btn" onclick="switchTab('profile')" id="tab-profile">👤 Profile</button>
-        <button class="tab-btn" onclick="switchTab('post')" id="tab-post">📌 Post</button>
-        <button class="tab-btn" onclick="switchTab('links')" id="tab-links">🔗 Links</button>
+    <!-- Showcase Tab -->
+    <div class="tab-content active" id="showcaseTab">
+      <div class="form-group">
+        <label class="form-label">Upload Photos to Showcase</label>
+        <div class="upload-area" onclick="document.getElementById('showcaseFileInput').click()">
+          <div style="font-size: 3rem; margin-bottom: 16px;">📸</div>
+          <div><strong>Click to upload</strong> or drag and drop</div>
+          <small style="color: var(--gray-4);">Images only • Full quality preserved</small>
+        </div>
+        <input type="file" id="showcaseFileInput" accept="image/*" multiple>
       </div>
 
-      <div class="modal-body">
+      <div id="showcasePhotosList"></div>
+    </div>
 
-        <!-- ── SETUP TAB ── -->
-        <div class="tab-panel active" id="panel-setup">
-          <div id="setupStatusBar"></div>
+    <!-- Galleries Tab -->
+    <div class="tab-content" id="galleriesTab">
+      <div class="form-group">
+        <label class="form-label">Create New Gallery</label>
+        <div style="display: grid; grid-template-columns: 1fr 1fr auto; gap: 12px;">
+          <input type="text" id="galleryName" class="form-input" placeholder="Player Name">
+          <input type="text" id="galleryPassword" class="form-input" placeholder="Password">
+          <button class="btn" onclick="createGallery()">Create</button>
+        </div>
+      </div>
 
-          <div class="info-box">
-            <strong>First time?</strong> You need a free <a href="https://supabase.com" target="_blank">Supabase</a> account. Create a project, then run the SQL below to set up your tables.
+      <div class="gallery-list" id="galleriesList"></div>
+
+      <!-- Upload to Gallery -->
+      <div id="galleryUploadSection" style="display: none; margin-top: 32px; padding-top: 32px; border-top: 1px solid var(--gray-2);">
+        <div class="form-group">
+          <label class="form-label">Upload Photos to <span id="currentGalleryName"></span></label>
+          <div class="upload-area" onclick="document.getElementById('galleryFileInput').click()">
+            <div style="font-size: 3rem; margin-bottom: 16px;">📸</div>
+            <div><strong>Click to upload</strong></div>
           </div>
-
-          <p style="font-size:0.82rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--gray-3);margin-bottom:6px;">Step 1 — Run this SQL in Supabase → SQL Editor</p>
-          <div class="sql-box" id="sqlBox">-- Run this in Supabase → SQL Editor → New Query
-
-create table if not exists site_config (
-  id integer primary key default 1,
-  name text default 'Dragsterjack',
-  bio text default 'Content creator focused on fun & outdoors.',
-  avatar_url text default '',
-  footer_text text default '© Dragsterjack 2025',
-  constraint single_row check (id = 1)
-);
-
-create table if not exists site_links (
-  id uuid primary key default gen_random_uuid(),
-  label text not null,
-  url text not null,
-  handle text default '',
-  icon text default 'link',
-  sort_order integer default 0,
-  created_at timestamptz default now()
-);
-
-create table if not exists site_post (
-  id integer primary key default 1,
-  platform text default 'youtube',
-  title text default '',
-  link text default '',
-  banner text default '',
-  description text default '',
-  active boolean default false,
-  constraint single_row check (id = 1)
-);
-
--- Allow public read & write (admin password protects frontend)
-alter table site_config enable row level security;
-alter table site_links enable row level security;
-alter table site_post enable row level security;
-
-create policy "Public read config" on site_config for select using (true);
-create policy "Public write config" on site_config for all using (true);
-create policy "Public read links" on site_links for select using (true);
-create policy "Public write links" on site_links for all using (true);
-create policy "Public read post" on site_post for select using (true);
-create policy "Public write post" on site_post for all using (true);
-
--- Seed default rows
-insert into site_config (id) values (1) on conflict (id) do nothing;
-insert into site_post (id) values (1) on conflict (id) do nothing;<button class="copy-sql-btn" onclick="copySQL()">Copy</button></div>
-
-          <p style="font-size:0.82rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--gray-3);margin-bottom:6px;margin-top:16px;">Step 2 — Enter your Supabase credentials</p>
-          <div class="info-box">Find these in Supabase → Project Settings → API</div>
-
-          <div class="field">
-            <label class="field-label">Supabase Project URL</label>
-            <input type="url" class="field-input" id="cfgUrl" placeholder="https://xyzxyzxyz.supabase.co">
-          </div>
-          <div class="field">
-            <label class="field-label">Supabase Anon Key</label>
-            <input type="text" class="field-input" id="cfgKey" placeholder="sb_publishable_... or eyJhbGci...">
-            <span class="field-hint">The public "anon" key — safe to use in a website.</span>
-          </div>
-          <div class="btn-row">
-            <button class="btn btn-primary" onclick="saveSupabaseCreds()" id="btnSaveCreds">Save & Connect</button>
-            <button class="btn btn-secondary" onclick="clearCreds()">Clear Credentials</button>
-          </div>
-          <div id="setupMsg"></div>
+          <input type="file" id="galleryFileInput" accept="image/*" multiple>
         </div>
 
-        <!-- ── PROFILE TAB ── -->
-        <div class="tab-panel" id="panel-profile">
-          <div class="field">
-            <label class="field-label">Display Name</label>
-            <input type="text" class="field-input" id="profName" placeholder="Dragsterjack">
-          </div>
-          <div class="field">
-            <label class="field-label">Bio</label>
-            <textarea class="field-textarea" id="profBio" placeholder="Tell visitors about yourself..."></textarea>
-          </div>
-          <div class="field">
-            <label class="field-label">Avatar Image URL</label>
-            <input type="url" class="field-input" id="profAvatar" placeholder="https://... (direct link to your photo)">
-            <span class="field-hint">Paste a direct link to your profile photo. Try uploading to Imgur or Supabase Storage.</span>
-          </div>
-          <div class="field">
-            <label class="field-label">Footer Text</label>
-            <input type="text" class="field-input" id="profFooter" placeholder="© Dragsterjack 2025">
-          </div>
-          <div class="btn-row">
-            <button class="btn btn-primary" onclick="saveProfile()" id="btnSaveProfile">Save Profile</button>
-          </div>
-          <div id="profileMsg"></div>
-        </div>
-
-        <!-- ── POST TAB ── -->
-        <div class="tab-panel" id="panel-post">
-          <div class="field" style="display:flex;align-items:center;justify-content:space-between;">
-            <span style="font-size:0.88rem;font-weight:600;">Show Latest Post</span>
-            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
-              <input type="checkbox" id="postActive" style="width:18px;height:18px;cursor:pointer;">
-              <span style="font-size:0.82rem;color:var(--gray-3);" id="postActiveLabel">Off</span>
-            </label>
-          </div>
-
-          <div class="field">
-            <label class="field-label">Platform</label>
-            <select class="field-select" id="formPlatform">
-              <option value="youtube">YouTube</option>
-              <option value="instagram">Instagram</option>
-              <option value="tiktok">TikTok</option>
-              <option value="x">X / Twitter</option>
-              <option value="facebook">Facebook</option>
-              <option value="twitch">Twitch</option>
-            </select>
-          </div>
-          <div class="field">
-            <label class="field-label">Title</label>
-            <input type="text" class="field-input" id="formTitle" placeholder="My latest video...">
-          </div>
-          <div class="field">
-            <label class="field-label">Link</label>
-            <input type="url" class="field-input" id="formLink" placeholder="https://...">
-          </div>
-          <div class="field">
-            <label class="field-label">Banner Image URL</label>
-            <input type="url" class="field-input" id="formBanner" placeholder="https://...">
-            <img class="banner-preview" id="bannerPreview" alt="Preview">
-          </div>
-          <div class="field">
-            <label class="field-label">Description</label>
-            <textarea class="field-textarea" id="formDesc" placeholder="Quick description..."></textarea>
-          </div>
-          <div class="btn-row">
-            <button class="btn btn-primary" onclick="savePost()" id="btnSavePost">Save Post</button>
-          </div>
-          <div id="postMsg"></div>
-        </div>
-
-        <!-- ── LINKS TAB ── -->
-        <div class="tab-panel" id="panel-links">
-
-          <div class="add-link-form" id="addLinkForm" style="display:none;">
-            <h4 id="addLinkFormTitle">Add New Link</h4>
-            <input type="hidden" id="editLinkId">
-            <div class="field">
-              <label class="field-label">Label</label>
-              <input type="text" class="field-input" id="linkLabel" placeholder="Instagram">
-            </div>
-            <div class="field">
-              <label class="field-label">URL</label>
-              <input type="url" class="field-input" id="linkUrl" placeholder="https://instagram.com/you">
-            </div>
-            <div class="field">
-              <label class="field-label">Handle / Subtitle (optional)</label>
-              <input type="text" class="field-input" id="linkHandle" placeholder="@you">
-            </div>
-            <div class="field">
-              <label class="field-label">Icon</label>
-              <select class="field-select" id="linkIcon">
-                <option value="instagram">Instagram</option>
-                <option value="youtube">YouTube</option>
-                <option value="tiktok">TikTok</option>
-                <option value="x">X / Twitter</option>
-                <option value="facebook">Facebook</option>
-                <option value="twitch">Twitch</option>
-                <option value="spotify">Spotify</option>
-                <option value="link">Generic Link</option>
-              </select>
-            </div>
-            <div class="btn-row">
-              <button class="btn btn-primary btn-sm" onclick="submitLinkForm()" id="btnLinkSubmit">Add Link</button>
-              <button class="btn btn-secondary btn-sm" onclick="cancelLinkForm()">Cancel</button>
-            </div>
-            <div id="linkFormMsg"></div>
-          </div>
-
-          <div class="links-list" id="adminLinksList">
-            <p style="color:var(--gray-3);font-size:0.88rem;text-align:center;padding:12px 0;">Loading links...</p>
-          </div>
-
-          <button class="btn btn-secondary" onclick="showAddLinkForm()" id="btnShowAddLink" style="width:100%;">+ Add New Link</button>
-          <div id="linksMsg"></div>
-        </div>
-
-      </div><!-- .modal-body -->
-    </div><!-- #adminPanel -->
-
-  </div><!-- .modal -->
-</div><!-- .modal-overlay -->
+        <div id="galleryPhotosList"></div>
+      </div>
+    </div>
+  </div>
+</div>
 
 <script>
-// ════════════════════════════════════
-//  CONSTANTS & STATE
-// ════════════════════════════════════
 const PW_HASH = '88056519922f4b7bc7b2b285c66c6f31ade6dc4959098676f689fc0525174b74';
-let authed = false;
 let sbClient = null;
-let currentPost = null;
-let currentLinks = [];
-let currentConfig = {};
+let showcasePhotos = [];
+let galleries = [];
+let currentGalleryId = null;
 
-const PLATFORM_ICONS = {
-  youtube: `<svg viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>`,
-  instagram: `<svg viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>`,
-  tiktok: `<svg viewBox="0 0 24 24"><path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/></svg>`,
-  x: `<svg viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.73-8.835L1.254 2.25H8.08l4.253 5.622 5.911-5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>`,
-  facebook: `<svg viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>`,
-  twitch: `<svg viewBox="0 0 24 24"><path d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714z"/></svg>`,
-  spotify: `<svg viewBox="0 0 24 24"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>`,
-  link: `<svg viewBox="0 0 24 24"><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/></svg>`
-};
-
-const PLATFORM_NAMES = { youtube:'YouTube', instagram:'Instagram', tiktok:'TikTok', x:'X / Twitter', facebook:'Facebook', twitch:'Twitch', spotify:'Spotify', link:'Link' };
-
-// ════════════════════════════════════
-//  SUPABASE INIT
-// ════════════════════════════════════
-
-// ⚠️  PASTE YOUR CREDENTIALS HERE so the site loads for everyone
-// Get these from your admin panel Setup tab, or from Supabase → Settings → API
-const HARDCODED_URL = 'https://ivpmrajkrgcojvdcavwn.supabase.co';  // e.g. 'https://xyz.supabase.co'
-const HARDCODED_KEY = 'sb_publishable_eDKUL25CG1-D3uAiZp7Bjg_iSr8knRX';  // e.g. 'sb_publishable_...'
+const HARDCODED_URL = '';
+const HARDCODED_KEY = '';
+const STORAGE_BUCKET = 'photos';
 
 function initSupabase(url, key) {
   try {
@@ -917,15 +402,10 @@ function initSupabase(url, key) {
 }
 
 function loadCreds() {
-  // First try hardcoded credentials (works for all visitors)
   if (HARDCODED_URL && HARDCODED_KEY) {
     initSupabase(HARDCODED_URL, HARDCODED_KEY);
-    // Also save to localStorage for admin panel use
-    localStorage.setItem('sb_url', HARDCODED_URL);
-    localStorage.setItem('sb_key', HARDCODED_KEY);
     return true;
   }
-  // Fallback to localStorage (for admin on devices without hardcoded creds)
   const url = localStorage.getItem('sb_url');
   const key = localStorage.getItem('sb_key');
   if (url && key) {
@@ -935,494 +415,335 @@ function loadCreds() {
   return false;
 }
 
-// ════════════════════════════════════
-//  LOAD SITE DATA ON PAGE LOAD
-// ════════════════════════════════════
-async function loadSiteData() {
-  loadCreds();
-  if (!sbClient) return;
-
-  try {
-    // Load config
-    const { data: cfg } = await sbClient.from('site_config').select('*').eq('id', 1).single();
-    if (cfg) {
-      currentConfig = cfg;
-      document.getElementById('siteName').textContent = cfg.name || 'Dragsterjack';
-      document.getElementById('siteBio').textContent = cfg.bio || '';
-      document.getElementById('footerText').textContent = cfg.footer_text || '© Dragsterjack 2025';
-      if (cfg.avatar_url) document.getElementById('siteAvatar').src = cfg.avatar_url;
-    }
-
-    // Load post
-    const { data: post } = await sbClient.from('site_post').select('*').eq('id', 1).single();
-    if (post && post.active && post.title) {
-      currentPost = post;
-      displayPost(post);
-    }
-
-    // Load links
-    const { data: links } = await sbClient.from('site_links').select('*').order('sort_order').order('created_at');
-    if (links && links.length) {
-      currentLinks = links;
-      renderLinks(links);
-    }
-
-  } catch(e) { /* Supabase not configured yet */ }
-}
-
-function displayPost(data) {
-  document.getElementById('latestPost').classList.add('visible');
-  document.getElementById('postCard').href = data.link || '#';
-  document.getElementById('postTitle').textContent = data.title;
-  document.getElementById('postDesc').textContent = data.description || '';
-
-  const banner = document.getElementById('postBanner');
-  if (data.banner) { banner.src = data.banner; banner.style.display = 'block'; }
-  else { banner.style.display = 'none'; }
-
-  const badge = document.getElementById('postPlatform');
-  const icon = PLATFORM_ICONS[data.platform] || PLATFORM_ICONS.link;
-  badge.innerHTML = icon + ' ' + (PLATFORM_NAMES[data.platform] || data.platform);
-}
-
-function renderLinks(links) {
-  const container = document.getElementById('socialLinks');
-  container.innerHTML = '';
-  links.forEach((link, i) => {
-    const a = document.createElement('a');
-    a.className = 'link-btn';
-    a.href = link.url;
-    a.target = '_blank';
-    a.rel = 'noopener';
-    a.style.animationDelay = (0.35 + i * 0.07) + 's';
-    a.innerHTML = `
-      <span class="link-icon">${PLATFORM_ICONS[link.icon] || PLATFORM_ICONS.link}</span>
-      <span>${link.label}</span>
-      ${link.handle ? `<span class="link-handle">${link.handle}</span>` : ''}
-    `;
-    container.appendChild(a);
-  });
-}
-
-loadSiteData();
-
-// ════════════════════════════════════
-//  PASSWORD CHECK
-// ════════════════════════════════════
-async function hashStr(s) {
-  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s));
+async function hashStr(str) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
   return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
 }
 
-async function checkPw() {
-  const val = document.getElementById('pwInput').value;
-  const hash = await hashStr(val);
-  if (hash === PW_HASH) {
-    authed = true;
-    document.getElementById('pwGate').style.display = 'none';
-    document.getElementById('modalTitle').textContent = 'Admin Panel';
-    document.getElementById('adminPanel').style.display = 'flex';
-    loadAdminData();
-  } else {
-    document.getElementById('pwError').style.display = 'block';
-    document.getElementById('pwInput').value = '';
-    document.getElementById('pwInput').focus();
+async function openAdmin() {
+  const pw = prompt('Admin password:');
+  if (!pw) return;
+  const hash = await hashStr(pw);
+  if (hash !== PW_HASH) {
+    alert('Incorrect password');
+    return;
   }
-}
-
-// ════════════════════════════════════
-//  MODAL
-// ════════════════════════════════════
-function openAdmin() {
-  document.getElementById('adminModal').classList.add('open');
-  if (!authed) {
-    document.getElementById('pwGate').style.display = 'block';
-    document.getElementById('adminPanel').style.display = 'none';
-    setTimeout(() => document.getElementById('pwInput').focus(), 100);
-  } else {
-    loadAdminData();
-  }
+  document.getElementById('adminModal').classList.add('active');
+  loadShowcasePhotos();
+  loadGalleries();
 }
 
 function closeAdmin() {
-  document.getElementById('adminModal').classList.remove('open');
+  document.getElementById('adminModal').classList.remove('active');
 }
 
-document.getElementById('adminModal').addEventListener('click', function(e) {
-  if (e.target === this) closeAdmin();
-});
-
-// ════════════════════════════════════
-//  TABS
-// ════════════════════════════════════
-function switchTab(name) {
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-  document.getElementById('tab-' + name).classList.add('active');
-  document.getElementById('panel-' + name).classList.add('active');
-}
-
-// ════════════════════════════════════
-//  LOAD ADMIN DATA
-// ════════════════════════════════════
-function loadAdminData() {
-  updateSetupStatus();
-
-  // Pre-fill setup
-  document.getElementById('cfgUrl').value = localStorage.getItem('sb_url') || '';
-  document.getElementById('cfgKey').value = localStorage.getItem('sb_key') || '';
-
-  if (!sbClient) return;
-
-  // Pre-fill profile
-  if (currentConfig) {
-    document.getElementById('profName').value = currentConfig.name || '';
-    document.getElementById('profBio').value = currentConfig.bio || '';
-    document.getElementById('profAvatar').value = currentConfig.avatar_url || '';
-    document.getElementById('profFooter').value = currentConfig.footer_text || '';
-  }
-
-  // Pre-fill post
-  if (currentPost) {
-    document.getElementById('postActive').checked = currentPost.active || false;
-    document.getElementById('formPlatform').value = currentPost.platform || 'youtube';
-    document.getElementById('formTitle').value = currentPost.title || '';
-    document.getElementById('formLink').value = currentPost.link || '';
-    document.getElementById('formBanner').value = currentPost.banner || '';
-    document.getElementById('formDesc').value = currentPost.description || '';
-    if (currentPost.banner) {
-      const prev = document.getElementById('bannerPreview');
-      prev.src = currentPost.banner;
-      prev.classList.add('visible');
-    }
-  }
-
-  // Load post state from DB if not loaded yet
-  refreshPostFromDB();
-
-  updatePostActiveLabel();
-  renderAdminLinks();
-}
-
-async function refreshPostFromDB() {
-  if (!sbClient) return;
-  const { data } = await sbClient.from('site_post').select('*').eq('id', 1).single();
-  if (data) {
-    currentPost = data;
-    document.getElementById('postActive').checked = data.active || false;
-    document.getElementById('formPlatform').value = data.platform || 'youtube';
-    document.getElementById('formTitle').value = data.title || '';
-    document.getElementById('formLink').value = data.link || '';
-    document.getElementById('formBanner').value = data.banner || '';
-    document.getElementById('formDesc').value = data.description || '';
-    if (data.banner) {
-      const prev = document.getElementById('bannerPreview');
-      prev.src = data.banner;
-      prev.classList.add('visible');
-    }
-    updatePostActiveLabel();
-  }
-}
-
-// ════════════════════════════════════
-//  SETUP TAB
-// ════════════════════════════════════
-function updateSetupStatus() {
-  const bar = document.getElementById('setupStatusBar');
-  const hasKey = !!localStorage.getItem('sb_key');
-  if (hasKey && sbClient) {
-    bar.innerHTML = `<div class="setup-status connected"><span class="setup-status-dot"></span>Connected to Supabase</div>`;
+function switchTab(tab) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  
+  if (tab === 'showcase') {
+    document.querySelectorAll('.tab')[0].classList.add('active');
+    document.getElementById('showcaseTab').classList.add('active');
   } else {
-    bar.innerHTML = `<div class="setup-status disconnected"><span class="setup-status-dot"></span>Not connected — enter credentials below</div>`;
+    document.querySelectorAll('.tab')[1].classList.add('active');
+    document.getElementById('galleriesTab').classList.add('active');
   }
 }
 
-async function saveSupabaseCreds() {
-  const url = document.getElementById('cfgUrl').value.trim();
-  const key = document.getElementById('cfgKey').value.trim();
-  const btn = document.getElementById('btnSaveCreds');
-  const msg = document.getElementById('setupMsg');
-
-  if (!url || !key) { msg.innerHTML = '<div class="error-msg">Both fields are required.</div>'; return; }
-
-  btn.disabled = true;
-  btn.innerHTML = '<span class="spinner"></span> Testing...';
-
+// Load showcase photos
+async function loadShowcasePhotos() {
+  if (!sbClient) return;
+  
   try {
-    const ok = initSupabase(url, key);
-    if (!ok) throw new Error('Invalid credentials format');
-
-    // Test connection
-    const { error } = await sbClient.from('site_config').select('id').eq('id', 1).single();
-    if (error && error.code !== 'PGRST116') throw error;
-
-    localStorage.setItem('sb_url', url);
-    localStorage.setItem('sb_key', key);
-
-    msg.innerHTML = '<div class="success-msg">✓ Connected! Loading your data...</div>';
-    updateSetupStatus();
-    await loadSiteData();
-    loadAdminData();
-
+    const { data, error } = await sbClient
+      .from('photos')
+      .select('*')
+      .is('gallery_id', null)
+      .order('sort_order')
+      .order('created_at', { ascending: false });
+    
+    if (error) throw error;
+    showcasePhotos = data || [];
+    renderShowcase();
+    renderShowcaseList();
   } catch(e) {
-    msg.innerHTML = `<div class="error-msg">Connection failed: ${e.message}. Check your URL and key, and make sure you ran the SQL setup.</div>`;
-    sbClient = null;
+    console.error('Load error:', e);
   }
-
-  btn.disabled = false;
-  btn.textContent = 'Save & Connect';
 }
 
-function clearCreds() {
-  if (!confirm('Clear Supabase credentials?')) return;
-  localStorage.removeItem('sb_url');
-  localStorage.removeItem('sb_key');
-  sbClient = null;
-  document.getElementById('cfgUrl').value = '';
-  document.getElementById('cfgKey').value = '';
-  updateSetupStatus();
-  document.getElementById('setupMsg').innerHTML = '<div class="success-msg">Credentials cleared.</div>';
-}
-
-function copySQL() {
-  const sql = document.getElementById('sqlBox').innerText.replace('Copy', '').trim();
-  navigator.clipboard.writeText(sql).then(() => {
-    const btn = document.querySelector('.copy-sql-btn');
-    btn.textContent = 'Copied!';
-    setTimeout(() => btn.textContent = 'Copy', 2000);
-  });
-}
-
-// ════════════════════════════════════
-//  PROFILE TAB
-// ════════════════════════════════════
-async function saveProfile() {
-  if (!sbClient) { showMsg('profileMsg', 'error', 'Not connected to Supabase. Go to Setup tab first.'); return; }
-
-  const btn = document.getElementById('btnSaveProfile');
-  btn.disabled = true;
-  btn.innerHTML = '<span class="spinner"></span>';
-
-  const data = {
-    id: 1,
-    name: document.getElementById('profName').value.trim(),
-    bio: document.getElementById('profBio').value.trim(),
-    avatar_url: document.getElementById('profAvatar').value.trim(),
-    footer_text: document.getElementById('profFooter').value.trim()
-  };
-
-  const { error } = await sbClient.from('site_config').upsert(data, { onConflict: 'id' });
-
-  if (error) {
-    showMsg('profileMsg', 'error', 'Error: ' + error.message);
-  } else {
-    currentConfig = data;
-    // Update live
-    if (data.name) document.getElementById('siteName').textContent = data.name;
-    if (data.bio) document.getElementById('siteBio').textContent = data.bio;
-    if (data.footer_text) document.getElementById('footerText').textContent = data.footer_text;
-    if (data.avatar_url) document.getElementById('siteAvatar').src = data.avatar_url;
-    showMsg('profileMsg', 'success', '✓ Profile saved!');
-  }
-
-  btn.disabled = false;
-  btn.textContent = 'Save Profile';
-}
-
-// ════════════════════════════════════
-//  POST TAB
-// ════════════════════════════════════
-document.getElementById('postActive').addEventListener('change', updatePostActiveLabel);
-function updatePostActiveLabel() {
-  const active = document.getElementById('postActive').checked;
-  document.getElementById('postActiveLabel').textContent = active ? 'On' : 'Off';
-}
-
-document.getElementById('formBanner').addEventListener('input', function() {
-  const prev = document.getElementById('bannerPreview');
-  if (this.value) {
-    prev.src = this.value;
-    prev.classList.add('visible');
-    prev.onerror = () => prev.classList.remove('visible');
-  } else {
-    prev.classList.remove('visible');
-  }
-});
-
-async function savePost() {
-  if (!sbClient) { showMsg('postMsg', 'error', 'Not connected to Supabase. Go to Setup tab first.'); return; }
-
-  const btn = document.getElementById('btnSavePost');
-  btn.disabled = true;
-  btn.innerHTML = '<span class="spinner"></span>';
-
-  const data = {
-    id: 1,
-    active: document.getElementById('postActive').checked,
-    platform: document.getElementById('formPlatform').value,
-    title: document.getElementById('formTitle').value.trim(),
-    link: document.getElementById('formLink').value.trim(),
-    banner: document.getElementById('formBanner').value.trim(),
-    description: document.getElementById('formDesc').value.trim()
-  };
-
-  const { error } = await sbClient.from('site_post').upsert(data, { onConflict: 'id' });
-
-  if (error) {
-    showMsg('postMsg', 'error', 'Error: ' + error.message);
-  } else {
-    currentPost = data;
-    if (data.active && data.title) {
-      displayPost(data);
-    } else {
-      document.getElementById('latestPost').classList.remove('visible');
-    }
-    showMsg('postMsg', 'success', '✓ Post saved! Changes are live.');
-  }
-
-  btn.disabled = false;
-  btn.textContent = 'Save Post';
-}
-
-// ════════════════════════════════════
-//  LINKS TAB
-// ════════════════════════════════════
-async function renderAdminLinks() {
-  if (!sbClient) {
-    document.getElementById('adminLinksList').innerHTML = '<p style="color:var(--gray-3);font-size:0.88rem;text-align:center;padding:12px 0;">Connect Supabase in Setup tab first.</p>';
+function renderShowcase() {
+  const grid = document.getElementById('showcaseGallery');
+  
+  if (showcasePhotos.length === 0) {
+    grid.innerHTML = '<div class="empty-state"><p>No photos in showcase yet</p></div>';
     return;
   }
-
-  const { data, error } = await sbClient.from('site_links').select('*').order('sort_order').order('created_at');
-  const list = document.getElementById('adminLinksList');
-
-  if (error || !data || data.length === 0) {
-    currentLinks = data || [];
-    list.innerHTML = '<p style="color:var(--gray-3);font-size:0.88rem;text-align:center;padding:12px 0;">No links yet. Add your first one below!</p>';
-    return;
-  }
-
-  currentLinks = data;
-  list.innerHTML = '';
-
-  data.forEach(link => {
-    const div = document.createElement('div');
-    div.className = 'link-item';
-    div.innerHTML = `
-      <span class="link-item-label">${escHtml(link.label)}</span>
-      <span class="link-item-url">${escHtml(link.url)}</span>
-      <div class="link-item-actions">
-        <button class="btn btn-secondary btn-sm" onclick="editLink('${link.id}')">Edit</button>
-        <button class="btn btn-danger btn-sm" onclick="deleteLink('${link.id}')">✕</button>
+  
+  grid.innerHTML = showcasePhotos.map(photo => {
+    const { data } = sbClient.storage.from(STORAGE_BUCKET).getPublicUrl(photo.filename);
+    return `
+      <div class="photo-card">
+        <img src="${data.publicUrl}" alt="${photo.original_name}">
       </div>
     `;
-    list.appendChild(div);
-  });
-
-  renderLinks(data);
+  }).join('');
 }
 
-function showAddLinkForm() {
-  document.getElementById('editLinkId').value = '';
-  document.getElementById('linkLabel').value = '';
-  document.getElementById('linkUrl').value = '';
-  document.getElementById('linkHandle').value = '';
-  document.getElementById('linkIcon').value = 'instagram';
-  document.getElementById('addLinkFormTitle').textContent = 'Add New Link';
-  document.getElementById('btnLinkSubmit').textContent = 'Add Link';
-  document.getElementById('addLinkForm').style.display = 'block';
-  document.getElementById('btnShowAddLink').style.display = 'none';
-  document.getElementById('linkFormMsg').innerHTML = '';
-  document.getElementById('linkLabel').focus();
-}
-
-function editLink(id) {
-  const link = currentLinks.find(l => l.id === id);
-  if (!link) return;
-  document.getElementById('editLinkId').value = id;
-  document.getElementById('linkLabel').value = link.label;
-  document.getElementById('linkUrl').value = link.url;
-  document.getElementById('linkHandle').value = link.handle || '';
-  document.getElementById('linkIcon').value = link.icon || 'link';
-  document.getElementById('addLinkFormTitle').textContent = 'Edit Link';
-  document.getElementById('btnLinkSubmit').textContent = 'Save Changes';
-  document.getElementById('addLinkForm').style.display = 'block';
-  document.getElementById('btnShowAddLink').style.display = 'none';
-  document.getElementById('linkFormMsg').innerHTML = '';
-}
-
-function cancelLinkForm() {
-  document.getElementById('addLinkForm').style.display = 'none';
-  document.getElementById('btnShowAddLink').style.display = 'block';
-}
-
-async function submitLinkForm() {
-  if (!sbClient) return;
-
-  const id = document.getElementById('editLinkId').value;
-  const label = document.getElementById('linkLabel').value.trim();
-  const url = document.getElementById('linkUrl').value.trim();
-
-  if (!label || !url) {
-    document.getElementById('linkFormMsg').innerHTML = '<div class="error-msg">Label and URL are required.</div>';
+function renderShowcaseList() {
+  const list = document.getElementById('showcasePhotosList');
+  
+  if (showcasePhotos.length === 0) {
+    list.innerHTML = '<div class="empty-state" style="padding: 20px;"><p>No photos yet</p></div>';
     return;
   }
-
-  const btn = document.getElementById('btnLinkSubmit');
-  btn.disabled = true;
-
-  const data = {
-    label,
-    url,
-    handle: document.getElementById('linkHandle').value.trim(),
-    icon: document.getElementById('linkIcon').value,
-    sort_order: id ? (currentLinks.find(l=>l.id===id)?.sort_order || 0) : currentLinks.length
-  };
-
-  let error;
-  if (id) {
-    const res = await sbClient.from('site_links').update(data).eq('id', id);
-    error = res.error;
-  } else {
-    const res = await sbClient.from('site_links').insert(data);
-    error = res.error;
-  }
-
-  if (error) {
-    document.getElementById('linkFormMsg').innerHTML = `<div class="error-msg">${error.message}</div>`;
-  } else {
-    cancelLinkForm();
-    await renderAdminLinks();
-    showMsg('linksMsg', 'success', '✓ Link saved!');
-  }
-
-  btn.disabled = false;
-  btn.textContent = id ? 'Save Changes' : 'Add Link';
+  
+  list.innerHTML = '<div style="margin-top: 32px; padding-top: 32px; border-top: 1px solid var(--gray-2);"><h3 style="margin-bottom: 16px;">Current Photos</h3>' +
+    showcasePhotos.map(photo => `
+      <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: var(--black); border-radius: 8px; margin-bottom: 8px;">
+        <span>${photo.original_name}</span>
+        <button class="btn btn-danger" style="padding: 8px 16px; font-size: 0.85rem;" onclick="deletePhoto('${photo.id}', null)">Delete</button>
+      </div>
+    `).join('') + '</div>';
 }
 
-async function deleteLink(id) {
-  if (!confirm('Delete this link?')) return;
-  const { error } = await sbClient.from('site_links').delete().eq('id', id);
-  if (error) {
-    showMsg('linksMsg', 'error', 'Error: ' + error.message);
+// File uploads
+document.getElementById('showcaseFileInput').addEventListener('change', async (e) => {
+  const files = Array.from(e.target.files);
+  await uploadPhotos(files, null);
+  e.target.value = '';
+});
+
+document.getElementById('galleryFileInput').addEventListener('change', async (e) => {
+  const files = Array.from(e.target.files);
+  await uploadPhotos(files, currentGalleryId);
+  e.target.value = '';
+});
+
+async function uploadPhotos(files, galleryId) {
+  if (!sbClient) return;
+  
+  for (const file of files) {
+    try {
+      const timestamp = Date.now();
+      const randomStr = Math.random().toString(36).substring(7);
+      const ext = file.name.split('.').pop();
+      const filename = `${timestamp}_${randomStr}.${ext}`;
+      
+      const { error: uploadError } = await sbClient.storage
+        .from(STORAGE_BUCKET)
+        .upload(filename, file);
+      
+      if (uploadError) throw uploadError;
+      
+      const { error: dbError } = await sbClient
+        .from('photos')
+        .insert({
+          gallery_id: galleryId,
+          filename: filename,
+          original_name: file.name,
+          sort_order: 0
+        });
+      
+      if (dbError) throw dbError;
+      
+      showMsg('adminMsg', 'success', `Uploaded ${file.name}`);
+    } catch(e) {
+      showMsg('adminMsg', 'error', `Failed: ${e.message}`);
+    }
+  }
+  
+  if (galleryId) {
+    loadGalleryPhotos(galleryId);
   } else {
-    await renderAdminLinks();
-    showMsg('linksMsg', 'success', '✓ Link deleted.');
+    loadShowcasePhotos();
   }
 }
 
-// ════════════════════════════════════
-//  HELPERS
-// ════════════════════════════════════
+async function deletePhoto(photoId, galleryId) {
+  if (!confirm('Delete this photo?')) return;
+  
+  try {
+    const { data: photo } = await sbClient
+      .from('photos')
+      .select('filename')
+      .eq('id', photoId)
+      .single();
+    
+    await sbClient.storage
+      .from(STORAGE_BUCKET)
+      .remove([photo.filename]);
+    
+    await sbClient
+      .from('photos')
+      .delete()
+      .eq('id', photoId);
+    
+    showMsg('adminMsg', 'success', 'Photo deleted');
+    
+    if (galleryId) {
+      loadGalleryPhotos(galleryId);
+    } else {
+      loadShowcasePhotos();
+    }
+  } catch(e) {
+    showMsg('adminMsg', 'error', 'Delete failed');
+  }
+}
+
+// Galleries
+async function loadGalleries() {
+  if (!sbClient) return;
+  
+  try {
+    const { data, error } = await sbClient
+      .from('photo_galleries')
+      .select('*, photos(count)')
+      .order('created_at', { ascending: false });
+    
+    if (error) throw error;
+    galleries = data || [];
+    renderGalleries();
+  } catch(e) {
+    console.error('Load galleries error:', e);
+  }
+}
+
+function renderGalleries() {
+  const list = document.getElementById('galleriesList');
+  
+  if (galleries.length === 0) {
+    list.innerHTML = '<div class="empty-state" style="padding: 20px;"><p>No galleries yet</p></div>';
+    return;
+  }
+  
+  list.innerHTML = galleries.map(gallery => {
+    const photoCount = gallery.photos?.[0]?.count || 0;
+    return `
+      <div class="gallery-item">
+        <div class="gallery-info">
+          <h3>${gallery.name}</h3>
+          <div class="gallery-meta">
+            ${photoCount} photos • Password: ${gallery.password} • dragsterjack.com/${gallery.slug}
+          </div>
+        </div>
+        <div class="gallery-actions">
+          <button class="btn" onclick="manageGallery('${gallery.id}', '${gallery.name}')">Manage Photos</button>
+          <button class="btn btn-danger" onclick="deleteGallery('${gallery.id}')">Delete</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+async function createGallery() {
+  const name = document.getElementById('galleryName').value.trim();
+  const password = document.getElementById('galleryPassword').value.trim();
+  
+  if (!name || !password) {
+    showMsg('adminMsg', 'error', 'Name and password required');
+    return;
+  }
+  
+  const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+  
+  try {
+    const { error } = await sbClient
+      .from('photo_galleries')
+      .insert({
+        name: name,
+        slug: slug,
+        password: password
+      });
+    
+    if (error) throw error;
+    
+    showMsg('adminMsg', 'success', `Gallery created: dragsterjack.com/${slug}`);
+    document.getElementById('galleryName').value = '';
+    document.getElementById('galleryPassword').value = '';
+    loadGalleries();
+  } catch(e) {
+    showMsg('adminMsg', 'error', 'Failed to create gallery');
+  }
+}
+
+async function deleteGallery(galleryId) {
+  if (!confirm('Delete this gallery and all its photos?')) return;
+  
+  try {
+    const { data: photos } = await sbClient
+      .from('photos')
+      .select('filename')
+      .eq('gallery_id', galleryId);
+    
+    if (photos && photos.length > 0) {
+      await sbClient.storage
+        .from(STORAGE_BUCKET)
+        .remove(photos.map(p => p.filename));
+    }
+    
+    await sbClient
+      .from('photos')
+      .delete()
+      .eq('gallery_id', galleryId);
+    
+    await sbClient
+      .from('photo_galleries')
+      .delete()
+      .eq('id', galleryId);
+    
+    showMsg('adminMsg', 'success', 'Gallery deleted');
+    loadGalleries();
+  } catch(e) {
+    showMsg('adminMsg', 'error', 'Delete failed');
+  }
+}
+
+function manageGallery(galleryId, galleryName) {
+  currentGalleryId = galleryId;
+  document.getElementById('currentGalleryName').textContent = galleryName;
+  document.getElementById('galleryUploadSection').style.display = 'block';
+  loadGalleryPhotos(galleryId);
+}
+
+async function loadGalleryPhotos(galleryId) {
+  try {
+    const { data, error } = await sbClient
+      .from('photos')
+      .select('*')
+      .eq('gallery_id', galleryId)
+      .order('sort_order')
+      .order('created_at', { ascending: false });
+    
+    if (error) throw error;
+    
+    const list = document.getElementById('galleryPhotosList');
+    
+    if (!data || data.length === 0) {
+      list.innerHTML = '<div class="empty-state" style="padding: 20px;"><p>No photos in this gallery yet</p></div>';
+      return;
+    }
+    
+    list.innerHTML = '<h3 style="margin: 20px 0 16px;">Photos in Gallery</h3>' +
+      data.map(photo => `
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: var(--black); border-radius: 8px; margin-bottom: 8px;">
+          <span>${photo.original_name}</span>
+          <button class="btn btn-danger" style="padding: 8px 16px; font-size: 0.85rem;" onclick="deletePhoto('${photo.id}', '${galleryId}')">Delete</button>
+        </div>
+      `).join('');
+  } catch(e) {
+    console.error('Load gallery photos error:', e);
+  }
+}
+
 function showMsg(id, type, text) {
   const el = document.getElementById(id);
-  el.innerHTML = `<div class="${type === 'error' ? 'error-msg' : 'success-msg'}">${text}</div>`;
-  setTimeout(() => { if (el) el.innerHTML = ''; }, 4000);
+  el.textContent = text;
+  el.className = 'msg active ' + type;
+  setTimeout(() => el.classList.remove('active'), 4000);
 }
 
-function escHtml(str) {
-  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
+loadCreds();
+loadShowcasePhotos();
 </script>
 
 </body>
