@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Photos — Dragsterjack</title>
-<meta name="description" content="Photography by Dragsterjack">
+<title>Fishing Log — Dragsterjack</title>
 <link rel="icon" type="image/png" href="logo.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,700;1,400&family=Oswald:wght@500;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <style>
   *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -19,8 +19,10 @@
     --gray-2: #333;
     --gray-3: #666;
     --gray-4: #999;
-    --gray-5: #e8e8e6;
+    --blue: #2196F3;
+    --green: #4CAF50;
     --red: #c0392b;
+    --gold: #FFD700;
   }
 
   body {
@@ -41,58 +43,244 @@
     font-size: 3rem;
     text-transform: uppercase;
     letter-spacing: 0.04em;
-    margin-bottom: 12px;
+    margin-bottom: 8px;
   }
 
   .subtitle {
     color: var(--gray-4);
   }
 
-  .gallery {
+  /* 3D Trophy Case */
+  .trophy-case {
     max-width: 1400px;
-    margin: 0 auto;
-    padding: 48px 24px;
+    margin: 48px auto;
+    padding: 24px;
+    background: var(--gray-1);
+    border: 1px solid var(--gray-2);
+    border-radius: 16px;
+  }
+
+  .trophy-header {
+    text-align: center;
+    margin-bottom: 32px;
+  }
+
+  .trophy-title {
+    font-family: 'Oswald', sans-serif;
+    font-size: 2rem;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .trophy-count {
+    color: var(--gray-4);
+  }
+
+  #fishCanvas {
+    width: 100%;
+    height: 500px;
+    border-radius: 12px;
+    background: linear-gradient(180deg, #001a33 0%, #003d5c 100%);
+    cursor: grab;
+  }
+
+  #fishCanvas:active {
+    cursor: grabbing;
+  }
+
+  .no-catches {
+    text-align: center;
+    padding: 100px 24px;
+    color: var(--gray-4);
+  }
+
+  /* Stats Dashboard */
+  .stats {
+    max-width: 1400px;
+    margin: 48px auto;
+    padding: 0 24px;
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 20px;
   }
 
-  .photo-card {
-    position: relative;
-    aspect-ratio: 3/2;
-    overflow: hidden;
-    border-radius: 8px;
-    cursor: pointer;
+  .stat-card {
     background: var(--gray-1);
+    padding: 24px;
+    border-radius: 12px;
+    border: 1px solid var(--gray-2);
+    text-align: center;
   }
 
-  .photo-card img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: transform 0.3s;
+  .stat-label {
+    color: var(--gray-4);
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 8px;
   }
 
-  .photo-card:hover img {
+  .stat-value {
+    font-family: 'Oswald', sans-serif;
+    font-size: 2.5rem;
+    color: var(--blue);
+  }
+
+  .stat-sublabel {
+    color: var(--gray-4);
+    font-size: 0.9rem;
+    margin-top: 4px;
+  }
+
+  /* Sections */
+  .section {
+    max-width: 1400px;
+    margin: 60px auto;
+    padding: 0 24px;
+  }
+
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 32px;
+  }
+
+  .section-title {
+    font-family: 'Oswald', sans-serif;
+    font-size: 2rem;
+    text-transform: uppercase;
+  }
+
+  .btn {
+    background: var(--blue);
+    color: var(--white);
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 0.95rem;
+    transition: all 0.2s;
+  }
+
+  .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(33, 150, 243, 0.3);
+  }
+
+  .btn-small {
+    padding: 8px 16px;
+    font-size: 0.85rem;
+  }
+
+  .btn-danger {
+    background: var(--red);
+  }
+
+  .btn-success {
+    background: var(--green);
+  }
+
+  /* Catch Cards */
+  .catches-grid {
+    display: grid;
+    gap: 20px;
+  }
+
+  .catch-card {
+    background: var(--gray-1);
+    border: 1px solid var(--gray-2);
+    border-radius: 12px;
+    padding: 24px;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 24px;
+    align-items: center;
+    transition: all 0.3s;
+  }
+
+  .catch-card:hover {
+    border-color: var(--blue);
+    transform: translateY(-2px);
+  }
+
+  .catch-icon {
+    font-size: 3rem;
+  }
+
+  .catch-info h3 {
+    margin-bottom: 8px;
+    font-size: 1.3rem;
+  }
+
+  .catch-stats {
+    display: flex;
+    gap: 20px;
+    color: var(--gray-4);
+    font-size: 0.9rem;
+  }
+
+  .catch-meta {
+    margin-top: 8px;
+    color: var(--gray-4);
+    font-size: 0.85rem;
+  }
+
+  /* Bucket List */
+  .bucket-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 16px;
+  }
+
+  .bucket-item {
+    background: var(--gray-1);
+    border: 1px solid var(--gray-2);
+    padding: 20px;
+    border-radius: 12px;
+    text-align: center;
+    transition: all 0.3s;
+  }
+
+  .bucket-item:hover {
+    border-color: var(--gold);
     transform: scale(1.05);
   }
 
+  .bucket-icon {
+    font-size: 2.5rem;
+    margin-bottom: 12px;
+  }
+
+  .bucket-name {
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+
+  .bucket-difficulty {
+    color: var(--gray-4);
+    font-size: 0.85rem;
+  }
+
+  /* Admin Panel */
   .admin-trigger {
     position: fixed;
     bottom: 24px;
     right: 24px;
     width: 56px;
     height: 56px;
-    background: var(--white);
-    color: var(--black);
+    background: var(--blue);
+    color: var(--white);
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    box-shadow: 0 4px 20px rgba(33, 150, 243, 0.4);
     transition: all 0.3s;
     z-index: 100;
+    font-size: 1.5rem;
   }
 
   .admin-trigger:hover {
@@ -103,7 +291,7 @@
     display: none;
     position: fixed;
     inset: 0;
-    background: rgba(0,0,0,0.9);
+    background: rgba(0,0,0,0.95);
     z-index: 1000;
     overflow-y: auto;
   }
@@ -113,7 +301,7 @@
   }
 
   .modal-content {
-    max-width: 900px;
+    max-width: 600px;
     margin: 48px auto;
     background: var(--gray-1);
     border-radius: 12px;
@@ -165,7 +353,7 @@
 
   .tab.active {
     color: var(--white);
-    border-bottom-color: var(--white);
+    border-bottom-color: var(--blue);
   }
 
   .tab-content {
@@ -200,71 +388,13 @@
 
   .form-input:focus, .form-select:focus {
     outline: none;
-    border-color: var(--white);
+    border-color: var(--blue);
   }
 
-  .btn {
-    background: var(--white);
-    color: var(--black);
-    border: none;
-    padding: 12px 24px;
-    border-radius: 8px;
-    font-weight: 600;
-    cursor: pointer;
-    font-size: 0.95rem;
-    transition: all 0.2s;
-  }
-
-  .btn:hover {
-    transform: translateY(-2px);
-  }
-
-  .btn-danger {
-    background: var(--red);
-    color: var(--white);
-  }
-
-  .upload-area {
-    border: 2px dashed var(--gray-3);
-    border-radius: 8px;
-    padding: 48px 24px;
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.3s;
-  }
-
-  .upload-area:hover {
-    border-color: var(--white);
-    background: rgba(255,255,255,0.05);
-  }
-
-  .gallery-list {
+  .form-row {
     display: grid;
-    gap: 16px;
-  }
-
-  .gallery-item {
-    background: var(--black);
-    padding: 20px;
-    border-radius: 8px;
-    display: grid;
-    grid-template-columns: 1fr auto;
-    gap: 16px;
-    align-items: center;
-  }
-
-  .gallery-info h3 {
-    margin-bottom: 8px;
-  }
-
-  .gallery-meta {
-    color: var(--gray-4);
-    font-size: 0.85rem;
-  }
-
-  .gallery-actions {
-    display: flex;
-    gap: 8px;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
   }
 
   .msg {
@@ -279,13 +409,15 @@
   }
 
   .msg.success {
-    background: #d4edda;
-    color: #155724;
+    background: rgba(76, 175, 80, 0.2);
+    color: var(--green);
+    border: 1px solid var(--green);
   }
 
   .msg.error {
-    background: #f8d7da;
-    color: #721c24;
+    background: rgba(192, 57, 43, 0.2);
+    color: var(--red);
+    border: 1px solid var(--red);
   }
 
   .empty-state {
@@ -294,30 +426,77 @@
     color: var(--gray-4);
   }
 
-  #fileInput {
-    display: none;
-  }
-
   @media (max-width: 768px) {
     .title { font-size: 2rem; }
-    .gallery { grid-template-columns: 1fr; }
-    .gallery-item { grid-template-columns: 1fr; }
+    .catch-card { grid-template-columns: 1fr; }
+    .form-row { grid-template-columns: 1fr; }
+    #fishCanvas { height: 300px; }
   }
 </style>
 </head>
 <body>
 
 <div class="header">
-  <h1 class="title">Photography</h1>
-  <p class="subtitle">Sports & Action</p>
+  <h1 class="title">🎣 Fishing Log</h1>
+  <p class="subtitle">Pennsylvania Species Tracker</p>
 </div>
 
-<div class="gallery" id="showcaseGallery">
-  <div class="empty-state">
-    <p>No photos in showcase yet</p>
+<!-- Stats Dashboard -->
+<div class="stats">
+  <div class="stat-card">
+    <div class="stat-label">Species Caught</div>
+    <div class="stat-value" id="speciesCount">0</div>
+    <div class="stat-sublabel">of 50 PA species</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Total Catches</div>
+    <div class="stat-value" id="totalCatches">0</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Biggest Fish</div>
+    <div class="stat-value" id="biggestFish">-</div>
+    <div class="stat-sublabel" id="biggestSpecies"></div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Bucket List</div>
+    <div class="stat-value" id="bucketCount">0</div>
+    <div class="stat-sublabel">dream catches</div>
   </div>
 </div>
 
+<!-- 3D Trophy Case -->
+<div class="trophy-case">
+  <div class="trophy-header">
+    <h2 class="trophy-title">🏆 Trophy Case</h2>
+    <p class="trophy-count">Rotate to view all catches • Drag to spin</p>
+  </div>
+  <canvas id="fishCanvas"></canvas>
+  <div id="noCatchesMsg" class="no-catches" style="display: none;">
+    <p>No catches yet. Add your first catch to see it here!</p>
+  </div>
+</div>
+
+<!-- Recent Catches -->
+<div class="section">
+  <div class="section-header">
+    <h2 class="section-title">Recent Catches</h2>
+  </div>
+  <div class="catches-grid" id="catchesList">
+    <div class="empty-state">No catches logged yet</div>
+  </div>
+</div>
+
+<!-- Bucket List -->
+<div class="section">
+  <div class="section-header">
+    <h2 class="section-title">Bucket List</h2>
+  </div>
+  <div class="bucket-grid" id="bucketList">
+    <div class="empty-state">No dream fish added yet</div>
+  </div>
+</div>
+
+<!-- Admin Button -->
 <div class="admin-trigger" onclick="openAdmin()">⚙️</div>
 
 <!-- Admin Modal -->
@@ -329,53 +508,145 @@
     </div>
 
     <div class="tabs">
-      <button class="tab active" onclick="switchTab('showcase')">Showcase Photos</button>
-      <button class="tab" onclick="switchTab('galleries')">Client Galleries</button>
+      <button class="tab active" onclick="switchTab('catch')">Log Catch</button>
+      <button class="tab" onclick="switchTab('bucket')">Bucket List</button>
+      <button class="tab" onclick="switchTab('manage')">Manage</button>
     </div>
 
     <div class="msg" id="adminMsg"></div>
 
-    <!-- Showcase Tab -->
-    <div class="tab-content active" id="showcaseTab">
+    <!-- Log Catch Tab -->
+    <div class="tab-content active" id="catchTab">
       <div class="form-group">
-        <label class="form-label">Upload Photos to Showcase</label>
-        <div class="upload-area" onclick="document.getElementById('showcaseFileInput').click()">
-          <div style="font-size: 3rem; margin-bottom: 16px;">📸</div>
-          <div><strong>Click to upload</strong> or drag and drop</div>
-          <small style="color: var(--gray-4);">Images only • Full quality preserved</small>
-        </div>
-        <input type="file" id="showcaseFileInput" accept="image/*" multiple>
+        <label class="form-label">Species</label>
+        <select id="catchSpecies" class="form-select">
+          <option value="">Select a species...</option>
+          <optgroup label="Bass">
+            <option value="Largemouth Bass">Largemouth Bass</option>
+            <option value="Smallmouth Bass">Smallmouth Bass</option>
+            <option value="Spotted Bass">Spotted Bass</option>
+            <option value="Rock Bass">Rock Bass</option>
+            <option value="White Bass">White Bass</option>
+            <option value="Striped Bass">Striped Bass</option>
+          </optgroup>
+          <optgroup label="Trout">
+            <option value="Brook Trout">Brook Trout</option>
+            <option value="Brown Trout">Brown Trout</option>
+            <option value="Rainbow Trout">Rainbow Trout</option>
+            <option value="Lake Trout">Lake Trout</option>
+            <option value="Steelhead">Steelhead</option>
+          </optgroup>
+          <optgroup label="Pike & Muskie">
+            <option value="Northern Pike">Northern Pike</option>
+            <option value="Muskellunge">Muskellunge</option>
+            <option value="Tiger Muskie">Tiger Muskie</option>
+            <option value="Chain Pickerel">Chain Pickerel</option>
+          </optgroup>
+          <optgroup label="Walleye & Perch">
+            <option value="Walleye">Walleye</option>
+            <option value="Sauger">Sauger</option>
+            <option value="Yellow Perch">Yellow Perch</option>
+          </optgroup>
+          <optgroup label="Panfish">
+            <option value="Bluegill">Bluegill</option>
+            <option value="Pumpkinseed">Pumpkinseed</option>
+            <option value="Redear Sunfish">Redear Sunfish</option>
+            <option value="Green Sunfish">Green Sunfish</option>
+            <option value="Black Crappie">Black Crappie</option>
+            <option value="White Crappie">White Crappie</option>
+          </optgroup>
+          <optgroup label="Catfish">
+            <option value="Channel Catfish">Channel Catfish</option>
+            <option value="Flathead Catfish">Flathead Catfish</option>
+            <option value="Blue Catfish">Blue Catfish</option>
+            <option value="Bullhead Catfish">Bullhead Catfish</option>
+          </optgroup>
+          <optgroup label="Carp">
+            <option value="Common Carp">Common Carp</option>
+            <option value="Grass Carp">Grass Carp</option>
+          </optgroup>
+          <optgroup label="Other">
+            <option value="American Shad">American Shad</option>
+            <option value="Hickory Shad">Hickory Shad</option>
+            <option value="American Eel">American Eel</option>
+            <option value="Bowfin">Bowfin</option>
+            <option value="Freshwater Drum">Freshwater Drum</option>
+            <option value="Fallfish">Fallfish</option>
+            <option value="Longnose Gar">Longnose Gar</option>
+            <option value="Burbot">Burbot</option>
+            <option value="Lake Sturgeon">Lake Sturgeon</option>
+            <option value="Atlantic Salmon">Atlantic Salmon</option>
+            <option value="Landlocked Salmon">Landlocked Salmon</option>
+            <option value="Kokanee Salmon">Kokanee Salmon</option>
+          </optgroup>
+        </select>
       </div>
 
-      <div id="showcasePhotosList"></div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Weight (lbs)</label>
+          <input type="number" id="catchWeight" class="form-input" placeholder="5.5" step="0.1" min="0">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Length (inches)</label>
+          <input type="number" id="catchLength" class="form-input" placeholder="18" step="0.1" min="0">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Location</label>
+        <input type="text" id="catchLocation" class="form-input" placeholder="Lake Nockamixon">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Date</label>
+        <input type="date" id="catchDate" class="form-input">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Notes (optional)</label>
+        <input type="text" id="catchNotes" class="form-input" placeholder="Caught on a crankbait...">
+      </div>
+
+      <button class="btn" onclick="logCatch()">Log Catch</button>
     </div>
 
-    <!-- Galleries Tab -->
-    <div class="tab-content" id="galleriesTab">
+    <!-- Bucket List Tab -->
+    <div class="tab-content" id="bucketTab">
       <div class="form-group">
-        <label class="form-label">Create New Gallery</label>
-        <div style="display: grid; grid-template-columns: 1fr 1fr auto; gap: 12px;">
-          <input type="text" id="galleryName" class="form-input" placeholder="Player Name">
-          <input type="text" id="galleryPassword" class="form-input" placeholder="Password">
-          <button class="btn" onclick="createGallery()">Create</button>
-        </div>
+        <label class="form-label">Species</label>
+        <select id="bucketSpecies" class="form-select">
+          <option value="">Select a species...</option>
+          <option value="Muskellunge">Muskellunge</option>
+          <option value="Tiger Muskie">Tiger Muskie</option>
+          <option value="Lake Trout">Lake Trout</option>
+          <option value="Striped Bass">Striped Bass</option>
+          <option value="Steelhead">Steelhead</option>
+          <option value="Lake Sturgeon">Lake Sturgeon</option>
+          <option value="Northern Pike">Northern Pike</option>
+          <option value="Flathead Catfish">Flathead Catfish</option>
+          <option value="Atlantic Salmon">Atlantic Salmon</option>
+          <option value="Walleye">Walleye</option>
+        </select>
       </div>
 
-      <div class="gallery-list" id="galleriesList"></div>
-
-      <!-- Upload to Gallery -->
-      <div id="galleryUploadSection" style="display: none; margin-top: 32px; padding-top: 32px; border-top: 1px solid var(--gray-2);">
-        <div class="form-group">
-          <label class="form-label">Upload Photos to <span id="currentGalleryName"></span></label>
-          <div class="upload-area" onclick="document.getElementById('galleryFileInput').click()">
-            <div style="font-size: 3rem; margin-bottom: 16px;">📸</div>
-            <div><strong>Click to upload</strong></div>
-          </div>
-          <input type="file" id="galleryFileInput" accept="image/*" multiple>
-        </div>
-
-        <div id="galleryPhotosList"></div>
+      <div class="form-group">
+        <label class="form-label">Goal Weight (lbs)</label>
+        <input type="number" id="bucketGoalWeight" class="form-input" placeholder="10" step="0.1" min="0">
       </div>
+
+      <div class="form-group">
+        <label class="form-label">Target Location</label>
+        <input type="text" id="bucketLocation" class="form-input" placeholder="Lake Erie">
+      </div>
+
+      <button class="btn" onclick="addToBucket()">Add to Bucket List</button>
+    </div>
+
+    <!-- Manage Tab -->
+    <div class="tab-content" id="manageTab">
+      <h3 style="margin-bottom: 16px;">Recent Catches</h3>
+      <div id="manageCatchesList"></div>
     </div>
   </div>
 </div>
@@ -383,36 +654,66 @@
 <script>
 const PW_HASH = '88056519922f4b7bc7b2b285c66c6f31ade6dc4959098676f689fc0525174b74';
 let sbClient = null;
-let showcasePhotos = [];
-let galleries = [];
-let currentGalleryId = null;
+let catches = [];
+let bucketList = [];
+let scene, camera, renderer, fishMeshes = [];
 
 const HARDCODED_URL = 'https://ivpmrajkrgcojvdcavwn.supabase.co';
 const HARDCODED_KEY = 'sb_publishable_eDKUL25CG1-D3uAiZp7Bjg_iSr8knRX';
-const STORAGE_BUCKET = 'photos';
+
+// Fish emoji mapping
+const FISH_EMOJI = {
+  'Largemouth Bass': '🐟',
+  'Smallmouth Bass': '🐟',
+  'Spotted Bass': '🐟',
+  'Rock Bass': '🐟',
+  'White Bass': '🐟',
+  'Striped Bass': '🐟',
+  'Brook Trout': '🎣',
+  'Brown Trout': '🎣',
+  'Rainbow Trout': '🎣',
+  'Lake Trout': '🎣',
+  'Steelhead': '🎣',
+  'Northern Pike': '🦈',
+  'Muskellunge': '🦈',
+  'Tiger Muskie': '🦈',
+  'Chain Pickerel': '🦈',
+  'Walleye': '🐠',
+  'Sauger': '🐠',
+  'Yellow Perch': '🐠',
+  'Bluegill': '🐡',
+  'Pumpkinseed': '🐡',
+  'Redear Sunfish': '🐡',
+  'Green Sunfish': '🐡',
+  'Black Crappie': '🐡',
+  'White Crappie': '🐡',
+  'Channel Catfish': '🐱',
+  'Flathead Catfish': '🐱',
+  'Blue Catfish': '🐱',
+  'Bullhead Catfish': '🐱',
+  'Common Carp': '🐲',
+  'Grass Carp': '🐲',
+  'Lake Sturgeon': '🦕',
+  'American Shad': '🐟',
+  'default': '🐟'
+};
+
+function getFishEmoji(species) {
+  return FISH_EMOJI[species] || FISH_EMOJI['default'];
+}
 
 function initSupabase(url, key) {
-  try {
-    sbClient = window.supabase.createClient(url, key);
-    return true;
-  } catch(e) {
-    console.error('Supabase init error:', e);
-    return false;
-  }
+  sbClient = window.supabase.createClient(url, key);
 }
 
 function loadCreds() {
   if (HARDCODED_URL && HARDCODED_KEY) {
     initSupabase(HARDCODED_URL, HARDCODED_KEY);
-    return true;
+  } else {
+    const url = localStorage.getItem('sb_url');
+    const key = localStorage.getItem('sb_key');
+    if (url && key) initSupabase(url, key);
   }
-  const url = localStorage.getItem('sb_url');
-  const key = localStorage.getItem('sb_key');
-  if (url && key) {
-    initSupabase(url, key);
-    return true;
-  }
-  return false;
 }
 
 async function hashStr(str) {
@@ -429,8 +730,8 @@ async function openAdmin() {
     return;
   }
   document.getElementById('adminModal').classList.add('active');
-  loadShowcasePhotos();
-  loadGalleries();
+  document.getElementById('catchDate').valueAsDate = new Date();
+  loadManageCatches();
 }
 
 function closeAdmin() {
@@ -441,309 +742,359 @@ function switchTab(tab) {
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
   
-  if (tab === 'showcase') {
-    document.querySelectorAll('.tab')[0].classList.add('active');
-    document.getElementById('showcaseTab').classList.add('active');
-  } else {
-    document.querySelectorAll('.tab')[1].classList.add('active');
-    document.getElementById('galleriesTab').classList.add('active');
-  }
+  const tabs = { catch: 0, bucket: 1, manage: 2 };
+  document.querySelectorAll('.tab')[tabs[tab]].classList.add('active');
+  document.getElementById(tab + 'Tab').classList.add('active');
 }
 
-// Load showcase photos
-async function loadShowcasePhotos() {
+// 3D Scene Setup
+function init3D() {
+  const canvas = document.getElementById('fishCanvas');
+  const width = canvas.clientWidth;
+  const height = canvas.clientHeight;
+  
+  scene = new THREE.Scene();
+  camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
+  camera.position.z = 15;
+  
+  renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: true });
+  renderer.setSize(width, height);
+  renderer.setClearColor(0x001a33, 1);
+  
+  // Lighting
+  const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+  scene.add(ambientLight);
+  
+  const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+  directionalLight.position.set(5, 5, 5);
+  scene.add(directionalLight);
+  
+  // Mouse interaction
+  let isDragging = false;
+  let previousMouseX = 0;
+  let rotationSpeed = 0;
+  
+  canvas.addEventListener('mousedown', (e) => {
+    isDragging = true;
+    previousMouseX = e.clientX;
+  });
+  
+  canvas.addEventListener('mousemove', (e) => {
+    if (isDragging) {
+      const deltaX = e.clientX - previousMouseX;
+      rotationSpeed = deltaX * 0.01;
+      previousMouseX = e.clientX;
+    }
+  });
+  
+  canvas.addEventListener('mouseup', () => {
+    isDragging = false;
+  });
+  
+  canvas.addEventListener('mouseleave', () => {
+    isDragging = false;
+  });
+  
+  // Animation loop
+  function animate() {
+    requestAnimationFrame(animate);
+    
+    // Rotate all fish together
+    fishMeshes.forEach(mesh => {
+      mesh.rotation.y += 0.01 + rotationSpeed;
+    });
+    
+    rotationSpeed *= 0.95; // Damping
+    
+    renderer.render(scene, camera);
+  }
+  
+  animate();
+  
+  // Handle window resize
+  window.addEventListener('resize', () => {
+    const w = canvas.clientWidth;
+    const h = canvas.clientHeight;
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+    renderer.setSize(w, h);
+  });
+}
+
+function create3DFish(species, index, total) {
+  // Create a simple fish shape using a cone
+  const geometry = new THREE.ConeGeometry(1, 3, 8);
+  
+  // Different colors for different species
+  const colors = [
+    0x4CAF50, // Green
+    0x2196F3, // Blue  
+    0xFF9800, // Orange
+    0xE91E63, // Pink
+    0x9C27B0, // Purple
+    0x00BCD4, // Cyan
+    0xFFEB3B, // Yellow
+    0xFF5722, // Deep Orange
+  ];
+  
+  const color = colors[index % colors.length];
+  const material = new THREE.MeshPhongMaterial({ color: color, shininess: 100 });
+  const mesh = new THREE.Mesh(geometry, material);
+  
+  // Position fish in a circle
+  const radius = 8;
+  const angle = (index / total) * Math.PI * 2;
+  mesh.position.x = Math.cos(angle) * radius;
+  mesh.position.z = Math.sin(angle) * radius;
+  mesh.rotation.z = Math.PI / 2; // Point sideways
+  mesh.rotation.y = -angle + Math.PI / 2; // Face center
+  
+  // Scale based on index (variety)
+  const scale = 0.8 + (Math.random() * 0.4);
+  mesh.scale.set(scale, scale, scale);
+  
+  scene.add(mesh);
+  fishMeshes.push(mesh);
+  
+  return mesh;
+}
+
+function update3DScene() {
+  // Clear existing fish
+  fishMeshes.forEach(mesh => scene.remove(mesh));
+  fishMeshes = [];
+  
+  const uniqueSpecies = [...new Set(catches.map(c => c.species))];
+  
+  if (uniqueSpecies.length === 0) {
+    document.getElementById('fishCanvas').style.display = 'none';
+    document.getElementById('noCatchesMsg').style.display = 'block';
+    return;
+  }
+  
+  document.getElementById('fishCanvas').style.display = 'block';
+  document.getElementById('noCatchesMsg').style.display = 'none';
+  
+  uniqueSpecies.forEach((species, i) => {
+    create3DFish(species, i, uniqueSpecies.length);
+  });
+}
+
+// Load Data
+async function loadData() {
   if (!sbClient) return;
   
   try {
-    const { data, error } = await sbClient
-      .from('photos')
+    // Load catches
+    const { data: catchData, error: catchError } = await sbClient
+      .from('fishing_catches')
       .select('*')
-      .is('gallery_id', null)
-      .order('sort_order')
+      .order('date', { ascending: false });
+    
+    if (catchError) throw catchError;
+    catches = catchData || [];
+    
+    // Load bucket list
+    const { data: bucketData, error: bucketError } = await sbClient
+      .from('fishing_bucket')
+      .select('*')
       .order('created_at', { ascending: false });
     
-    if (error) throw error;
-    showcasePhotos = data || [];
-    renderShowcase();
-    renderShowcaseList();
+    if (bucketError) throw bucketError;
+    bucketList = bucketData || [];
+    
+    updateStats();
+    renderCatches();
+    renderBucket();
+    update3DScene();
+    
   } catch(e) {
     console.error('Load error:', e);
   }
 }
 
-function renderShowcase() {
-  const grid = document.getElementById('showcaseGallery');
+function updateStats() {
+  const uniqueSpecies = new Set(catches.map(c => c.species));
+  document.getElementById('speciesCount').textContent = uniqueSpecies.size;
+  document.getElementById('totalCatches').textContent = catches.length;
+  document.getElementById('bucketCount').textContent = bucketList.length;
   
-  if (showcasePhotos.length === 0) {
-    grid.innerHTML = '<div class="empty-state"><p>No photos in showcase yet</p></div>';
+  if (catches.length > 0) {
+    const biggest = catches.reduce((max, c) => 
+      (c.weight > max.weight) ? c : max
+    );
+    document.getElementById('biggestFish').textContent = biggest.weight + ' lbs';
+    document.getElementById('biggestSpecies').textContent = biggest.species;
+  }
+}
+
+function renderCatches() {
+  const list = document.getElementById('catchesList');
+  
+  if (catches.length === 0) {
+    list.innerHTML = '<div class="empty-state">No catches logged yet</div>';
     return;
   }
   
-  grid.innerHTML = showcasePhotos.map(photo => {
-    const { data } = sbClient.storage.from(STORAGE_BUCKET).getPublicUrl(photo.filename);
-    return `
-      <div class="photo-card">
-        <img src="${data.publicUrl}" alt="${photo.original_name}">
-      </div>
-    `;
-  }).join('');
-}
-
-function renderShowcaseList() {
-  const list = document.getElementById('showcasePhotosList');
-  
-  if (showcasePhotos.length === 0) {
-    list.innerHTML = '<div class="empty-state" style="padding: 20px;"><p>No photos yet</p></div>';
-    return;
-  }
-  
-  list.innerHTML = '<div style="margin-top: 32px; padding-top: 32px; border-top: 1px solid var(--gray-2);"><h3 style="margin-bottom: 16px;">Current Photos</h3>' +
-    showcasePhotos.map(photo => `
-      <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: var(--black); border-radius: 8px; margin-bottom: 8px;">
-        <span>${photo.original_name}</span>
-        <button class="btn btn-danger" style="padding: 8px 16px; font-size: 0.85rem;" onclick="deletePhoto('${photo.id}', null)">Delete</button>
-      </div>
-    `).join('') + '</div>';
-}
-
-// File uploads
-document.getElementById('showcaseFileInput').addEventListener('change', async (e) => {
-  const files = Array.from(e.target.files);
-  await uploadPhotos(files, null);
-  e.target.value = '';
-});
-
-document.getElementById('galleryFileInput').addEventListener('change', async (e) => {
-  const files = Array.from(e.target.files);
-  await uploadPhotos(files, currentGalleryId);
-  e.target.value = '';
-});
-
-async function uploadPhotos(files, galleryId) {
-  if (!sbClient) return;
-  
-  for (const file of files) {
-    try {
-      const timestamp = Date.now();
-      const randomStr = Math.random().toString(36).substring(7);
-      const ext = file.name.split('.').pop();
-      const filename = `${timestamp}_${randomStr}.${ext}`;
-      
-      const { error: uploadError } = await sbClient.storage
-        .from(STORAGE_BUCKET)
-        .upload(filename, file);
-      
-      if (uploadError) throw uploadError;
-      
-      const { error: dbError } = await sbClient
-        .from('photos')
-        .insert({
-          gallery_id: galleryId,
-          filename: filename,
-          original_name: file.name,
-          sort_order: 0
-        });
-      
-      if (dbError) throw dbError;
-      
-      showMsg('adminMsg', 'success', `Uploaded ${file.name}`);
-    } catch(e) {
-      showMsg('adminMsg', 'error', `Failed: ${e.message}`);
-    }
-  }
-  
-  if (galleryId) {
-    loadGalleryPhotos(galleryId);
-  } else {
-    loadShowcasePhotos();
-  }
-}
-
-async function deletePhoto(photoId, galleryId) {
-  if (!confirm('Delete this photo?')) return;
-  
-  try {
-    const { data: photo } = await sbClient
-      .from('photos')
-      .select('filename')
-      .eq('id', photoId)
-      .single();
-    
-    await sbClient.storage
-      .from(STORAGE_BUCKET)
-      .remove([photo.filename]);
-    
-    await sbClient
-      .from('photos')
-      .delete()
-      .eq('id', photoId);
-    
-    showMsg('adminMsg', 'success', 'Photo deleted');
-    
-    if (galleryId) {
-      loadGalleryPhotos(galleryId);
-    } else {
-      loadShowcasePhotos();
-    }
-  } catch(e) {
-    showMsg('adminMsg', 'error', 'Delete failed');
-  }
-}
-
-// Galleries
-async function loadGalleries() {
-  if (!sbClient) return;
-  
-  try {
-    const { data, error } = await sbClient
-      .from('photo_galleries')
-      .select('*, photos(count)')
-      .order('created_at', { ascending: false });
-    
-    if (error) throw error;
-    galleries = data || [];
-    renderGalleries();
-  } catch(e) {
-    console.error('Load galleries error:', e);
-  }
-}
-
-function renderGalleries() {
-  const list = document.getElementById('galleriesList');
-  
-  if (galleries.length === 0) {
-    list.innerHTML = '<div class="empty-state" style="padding: 20px;"><p>No galleries yet</p></div>';
-    return;
-  }
-  
-  list.innerHTML = galleries.map(gallery => {
-    const photoCount = gallery.photos?.[0]?.count || 0;
-    return `
-      <div class="gallery-item">
-        <div class="gallery-info">
-          <h3>${gallery.name}</h3>
-          <div class="gallery-meta">
-            ${photoCount} photos • Password: ${gallery.password} • dragsterjack.com/${gallery.slug}
-          </div>
+  list.innerHTML = catches.slice(0, 10).map(c => `
+    <div class="catch-card">
+      <div class="catch-icon">${getFishEmoji(c.species)}</div>
+      <div class="catch-info">
+        <h3>${c.species}</h3>
+        <div class="catch-stats">
+          <span>⚖️ ${c.weight} lbs</span>
+          <span>📏 ${c.length}"</span>
+          <span>📍 ${c.location}</span>
         </div>
-        <div class="gallery-actions">
-          <button class="btn" onclick="manageGallery('${gallery.id}', '${gallery.name}')">Manage Photos</button>
-          <button class="btn btn-danger" onclick="deleteGallery('${gallery.id}')">Delete</button>
+        <div class="catch-meta">
+          ${new Date(c.date).toLocaleDateString()} ${c.notes ? '• ' + c.notes : ''}
         </div>
       </div>
-    `;
-  }).join('');
+    </div>
+  `).join('');
 }
 
-async function createGallery() {
-  const name = document.getElementById('galleryName').value.trim();
-  const password = document.getElementById('galleryPassword').value.trim();
+function renderBucket() {
+  const list = document.getElementById('bucketList');
   
-  if (!name || !password) {
-    showMsg('adminMsg', 'error', 'Name and password required');
+  if (bucketList.length === 0) {
+    list.innerHTML = '<div class="empty-state">No dream fish added yet</div>';
     return;
   }
   
-  const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+  list.innerHTML = bucketList.map(b => `
+    <div class="bucket-item">
+      <div class="bucket-icon">🎯</div>
+      <div class="bucket-name">${b.species}</div>
+      <div class="bucket-difficulty">Goal: ${b.goal_weight} lbs • ${b.target_location}</div>
+    </div>
+  `).join('');
+}
+
+async function logCatch() {
+  const species = document.getElementById('catchSpecies').value;
+  const weight = parseFloat(document.getElementById('catchWeight').value);
+  const length = parseFloat(document.getElementById('catchLength').value);
+  const location = document.getElementById('catchLocation').value;
+  const date = document.getElementById('catchDate').value;
+  const notes = document.getElementById('catchNotes').value;
+  
+  if (!species || !weight || !length || !location || !date) {
+    showMsg('error', 'Please fill in all required fields');
+    return;
+  }
   
   try {
     const { error } = await sbClient
-      .from('photo_galleries')
+      .from('fishing_catches')
       .insert({
-        name: name,
-        slug: slug,
-        password: password
+        species,
+        weight,
+        length,
+        location,
+        date,
+        notes
       });
     
     if (error) throw error;
     
-    showMsg('adminMsg', 'success', `Gallery created: dragsterjack.com/${slug}`);
-    document.getElementById('galleryName').value = '';
-    document.getElementById('galleryPassword').value = '';
-    loadGalleries();
+    showMsg('success', `${species} logged successfully!`);
+    
+    // Clear form
+    document.getElementById('catchSpecies').value = '';
+    document.getElementById('catchWeight').value = '';
+    document.getElementById('catchLength').value = '';
+    document.getElementById('catchLocation').value = '';
+    document.getElementById('catchNotes').value = '';
+    document.getElementById('catchDate').valueAsDate = new Date();
+    
+    loadData();
+    
   } catch(e) {
-    showMsg('adminMsg', 'error', 'Failed to create gallery');
+    showMsg('error', 'Failed to log catch');
+    console.error(e);
   }
 }
 
-async function deleteGallery(galleryId) {
-  if (!confirm('Delete this gallery and all its photos?')) return;
+async function addToBucket() {
+  const species = document.getElementById('bucketSpecies').value;
+  const goal_weight = parseFloat(document.getElementById('bucketGoalWeight').value);
+  const target_location = document.getElementById('bucketLocation').value;
+  
+  if (!species || !goal_weight || !target_location) {
+    showMsg('error', 'Please fill in all fields');
+    return;
+  }
   
   try {
-    const { data: photos } = await sbClient
-      .from('photos')
-      .select('filename')
-      .eq('gallery_id', galleryId);
-    
-    if (photos && photos.length > 0) {
-      await sbClient.storage
-        .from(STORAGE_BUCKET)
-        .remove(photos.map(p => p.filename));
-    }
-    
-    await sbClient
-      .from('photos')
-      .delete()
-      .eq('gallery_id', galleryId);
-    
-    await sbClient
-      .from('photo_galleries')
-      .delete()
-      .eq('id', galleryId);
-    
-    showMsg('adminMsg', 'success', 'Gallery deleted');
-    loadGalleries();
-  } catch(e) {
-    showMsg('adminMsg', 'error', 'Delete failed');
-  }
-}
-
-function manageGallery(galleryId, galleryName) {
-  currentGalleryId = galleryId;
-  document.getElementById('currentGalleryName').textContent = galleryName;
-  document.getElementById('galleryUploadSection').style.display = 'block';
-  loadGalleryPhotos(galleryId);
-}
-
-async function loadGalleryPhotos(galleryId) {
-  try {
-    const { data, error } = await sbClient
-      .from('photos')
-      .select('*')
-      .eq('gallery_id', galleryId)
-      .order('sort_order')
-      .order('created_at', { ascending: false });
+    const { error } = await sbClient
+      .from('fishing_bucket')
+      .insert({
+        species,
+        goal_weight,
+        target_location
+      });
     
     if (error) throw error;
     
-    const list = document.getElementById('galleryPhotosList');
+    showMsg('success', `${species} added to bucket list!`);
     
-    if (!data || data.length === 0) {
-      list.innerHTML = '<div class="empty-state" style="padding: 20px;"><p>No photos in this gallery yet</p></div>';
-      return;
-    }
+    // Clear form
+    document.getElementById('bucketSpecies').value = '';
+    document.getElementById('bucketGoalWeight').value = '';
+    document.getElementById('bucketLocation').value = '';
     
-    list.innerHTML = '<h3 style="margin: 20px 0 16px;">Photos in Gallery</h3>' +
-      data.map(photo => `
-        <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: var(--black); border-radius: 8px; margin-bottom: 8px;">
-          <span>${photo.original_name}</span>
-          <button class="btn btn-danger" style="padding: 8px 16px; font-size: 0.85rem;" onclick="deletePhoto('${photo.id}', '${galleryId}')">Delete</button>
-        </div>
-      `).join('');
+    loadData();
+    
   } catch(e) {
-    console.error('Load gallery photos error:', e);
+    showMsg('error', 'Failed to add to bucket list');
+    console.error(e);
   }
 }
 
-function showMsg(id, type, text) {
-  const el = document.getElementById(id);
+async function deleteCatch(id) {
+  if (!confirm('Delete this catch?')) return;
+  
+  try {
+    await sbClient.from('fishing_catches').delete().eq('id', id);
+    showMsg('success', 'Catch deleted');
+    loadData();
+    loadManageCatches();
+  } catch(e) {
+    showMsg('error', 'Delete failed');
+  }
+}
+
+function loadManageCatches() {
+  const list = document.getElementById('manageCatchesList');
+  
+  if (catches.length === 0) {
+    list.innerHTML = '<div class="empty-state" style="padding: 20px;">No catches yet</div>';
+    return;
+  }
+  
+  list.innerHTML = catches.map(c => `
+    <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: var(--black); border-radius: 8px; margin-bottom: 8px;">
+      <div>
+        <strong>${c.species}</strong> - ${c.weight}lbs, ${c.length}"
+        <br><small style="color: var(--gray-4);">${new Date(c.date).toLocaleDateString()} • ${c.location}</small>
+      </div>
+      <button class="btn btn-danger btn-small" onclick="deleteCatch('${c.id}')">Delete</button>
+    </div>
+  `).join('');
+}
+
+function showMsg(type, text) {
+  const el = document.getElementById('adminMsg');
   el.textContent = text;
   el.className = 'msg active ' + type;
   setTimeout(() => el.classList.remove('active'), 4000);
 }
 
+// Initialize
 loadCreds();
-loadShowcasePhotos();
+init3D();
+loadData();
 </script>
 
 </body>
