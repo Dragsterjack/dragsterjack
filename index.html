@@ -1,19 +1,205 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Redirecting...</title>
-<script>
-  // Only redirect if we're at the root path
-  if (window.location.pathname === '/' || window.location.pathname === '') {
-    // Redirect to guns.lol
-    window.location.href = 'https://guns.lol/dragsterjack';
-  }
-  // Otherwise, let the page load normally (for subpaths like /music, /aura, etc.)
-</script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Parkland Schedule</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background-color: #11111B;
+      color: #FFFFFF;
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+    }
+    .container {
+      max-width: 500px;
+      width: 100%;
+    }
+    .card {
+      background-color: #1E1E2E;
+      border-radius: 12px;
+      padding: 16px;
+      margin-top: 16px;
+    }
+    .accent { color: #89B4FA; }
+    .orange { color: #FAB387; }
+    .period-row {
+      display: flex;
+      justify-content: space-between;
+      background-color: #181825;
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 8px;
+    }
+    button {
+      background-color: #89B4FA;
+      color: #000;
+      border: none;
+      padding: 10px 16px;
+      font-weight: bold;
+      border-radius: 8px;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 8px;
+    }
+    input {
+      width: 100%;
+      padding: 10px;
+      margin: 6px 0;
+      border-radius: 6px;
+      border: 1px solid #313244;
+      background: #181825;
+      color: white;
+      box-sizing: border-box;
+    }
+  </style>
 </head>
 <body>
-  <p>Redirecting...</p>
+  <div class="container">
+    <h2>📅 Parkland Schedule Web</h2>
+    <div id="status-badge" class="accent" style="font-weight: bold;">Loading global schedule...</div>
+
+    <!-- Login Form -->
+    <div id="auth-section" class="card">
+      <h3>Sign In / Register</h3>
+      <input type="email" id="email" placeholder="Email Address">
+      <input type="password" id="password" placeholder="Password">
+      <button onclick="login()">Log In</button>
+      <button onclick="register()" style="background-color:#313244; color:white;">Create Account</button>
+    </div>
+
+    <!-- Main Schedule Interface -->
+    <div id="main-section" style="display:none;">
+      <div id="user-info" style="font-size:12px; color:gray; margin-top:8px;"></div>
+      
+      <!-- Active Class Card -->
+      <div class="card">
+        <div id="active-header" class="accent" style="font-size:14px; font-weight:600;">Active Class</div>
+        <h2 id="active-class-name" style="margin:8px 0 4px 0;">--</h2>
+        <div id="active-timer" class="orange" style="font-size:16px;">--</div>
+      </div>
+
+      <!-- Schedule List -->
+      <div id="schedule-list" style="margin-top:16px;"></div>
+
+      <!-- Admin Panel (Only visible for dragsterjackk@gmail.com) -->
+      <div id="admin-panel" class="card" style="display:none; border: 1px solid #FAB387;">
+        <h3 class="orange">👑 Global Admin Panel</h3>
+        <label>Day Cycle (1-6):</label>
+        <input type="number" id="admin-day" min="1" max="6" value="6">
+        <label>Bell Schedule (A-D):</label>
+        <input type="text" id="admin-type" value="A">
+        <label>Marking Period (1-4):</label>
+        <input type="number" id="admin-mp" min="1" max="4" value="1">
+        <button onclick="publishGlobalUpdate()" style="background-color:#FAB387;">🚀 Publish Global Schedule Update</button>
+      </div>
+
+      <button onclick="logout()" style="background-color:#F38BA8; margin-top:20px;">Sign Out</button>
+    </div>
+  </div>
+
+  <!-- Firebase Web SDKs -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    // REPLACE THIS WITH YOUR FIREBASE CONFIG FROM STEP 1
+    const firebaseConfig = {
+  apiKey: "AIzaSyAfUZokacAFr6bQKEac0nm3VwoIFTSvQw4",
+  authDomain: "parkland-schedule.firebaseapp.com",
+  projectId: "parkland-schedule",
+  storageBucket: "parkland-schedule.firebasestorage.app",
+  messagingSenderId: "1029360379641",
+  appId: "1:1029360379641:web:d0af40e8ebc177e01c2428"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    let currentConfig = { currentDay: 6, scheduleType: "A", currentMP: 1 };
+    let userSchedule = [];
+
+    // Real-Time Listener for Global Schedule (Day Cycle, Bell Schedule, MP)
+    onSnapshot(doc(db, "global", "config"), (snapshot) => {
+      if (snapshot.exists()) {
+        currentConfig = snapshot.data();
+      }
+      document.getElementById("status-badge").innerText = 
+        `Day ${currentConfig.currentDay}${currentConfig.scheduleType} • Marking Period ${currentConfig.currentMP}`;
+    });
+
+    // Auth State Listener
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        document.getElementById("auth-section").style.display = "none";
+        document.getElementById("main-section").style.display = "block";
+        document.getElementById("user-info").innerText = `Logged in as: ${user.email}`;
+
+        // Show Admin Panel only for admin email
+        if (user.email.toLowerCase() === "dragsterjackk@gmail.com") {
+          document.getElementById("admin-panel").style.display = "block";
+        }
+
+        // Listen for user schedule in Firestore
+        onSnapshot(doc(db, "users", user.uid), (snapshot) => {
+          if (snapshot.exists() && snapshot.data().scheduleJson) {
+            userSchedule = JSON.parse(snapshot.data().scheduleJson);
+            renderSchedule();
+          }
+        });
+      } else {
+        document.getElementById("auth-section").style.display = "block";
+        document.getElementById("main-section").style.display = "none";
+      }
+    });
+
+    window.login = () => {
+      const email = document.getElementById("email").value;
+      const pass = document.getElementById("password").value;
+      signInWithEmailAndPassword(auth, email, pass).catch(err => alert(err.message));
+    };
+
+    window.register = () => {
+      const email = document.getElementById("email").value;
+      const pass = document.getElementById("password").value;
+      createUserWithEmailAndPassword(auth, email, pass).catch(err => alert(err.message));
+    };
+
+    window.logout = () => signOut(auth);
+
+    window.publishGlobalUpdate = async () => {
+      const day = parseInt(document.getElementById("admin-day").value);
+      const type = document.getElementById("admin-type").value.toUpperCase();
+      const mp = parseInt(document.getElementById("admin-mp").value);
+
+      await setDoc(doc(db, "global", "config"), {
+        currentDay: day,
+        scheduleType: type,
+        currentMP: mp,
+        updatedAt: Date.now()
+      });
+      alert("🚀 Global Schedule Updated!");
+    };
+
+    function renderSchedule() {
+      const listDiv = document.getElementById("schedule-list");
+      listDiv.innerHTML = "";
+      userSchedule.forEach(item => {
+        listDiv.innerHTML += `
+          <div class="period-row">
+            <div>
+              <strong>Period ${item.period}: ${item.name}</strong><br>
+              <span style="font-size:12px; color:gray;">Room: ${item.room} • Teacher: ${item.teacher}</span>
+            </div>
+          </div>
+        `;
+      });
+    }
+  </script>
 </body>
 </html>
